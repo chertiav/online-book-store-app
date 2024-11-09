@@ -1,13 +1,19 @@
 package com.achdev.onlinebookstoreapp.service.impl;
 
+import static com.achdev.onlinebookstoreapp.model.QBook.book;
+
 import com.achdev.onlinebookstoreapp.dto.BookDto;
+import com.achdev.onlinebookstoreapp.dto.BookSearchParameters;
 import com.achdev.onlinebookstoreapp.dto.CreateBookRequestDto;
 import com.achdev.onlinebookstoreapp.exception.EntityNotFoundException;
 import com.achdev.onlinebookstoreapp.mapper.BookMapper;
 import com.achdev.onlinebookstoreapp.model.Book;
 import com.achdev.onlinebookstoreapp.repository.BookRepository;
+import com.achdev.onlinebookstoreapp.repository.querydsl.QPredicates;
 import com.achdev.onlinebookstoreapp.service.BookService;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import java.util.List;
+import java.util.stream.StreamSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +35,20 @@ public class BookServiceImpl implements BookService {
         return bookRepository.findById(id)
                 .map(bookMapper::toDto)
                 .orElseThrow(() -> new EntityNotFoundException("Can't find book by id: " + id));
+    }
+
+    @Override
+    public List<BookDto> findAllByParameters(BookSearchParameters parameters) {
+        BooleanExpression predicates = QPredicates.builder()
+                .add(parameters.titles(), book.title::containsIgnoreCase)
+                .add(parameters.authors(), book.author::containsIgnoreCase)
+                .add(parameters.isbns(), book.isbn::containsIgnoreCase)
+                .add(parameters.descriptions(), book.description::containsIgnoreCase)
+                .build();
+
+        return StreamSupport.stream(bookRepository.findAll(predicates).spliterator(), false)
+                .map(bookMapper::toDto)
+                .toList();
     }
 
     @Override

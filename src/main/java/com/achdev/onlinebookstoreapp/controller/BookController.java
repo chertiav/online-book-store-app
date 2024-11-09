@@ -1,6 +1,7 @@
 package com.achdev.onlinebookstoreapp.controller;
 
 import com.achdev.onlinebookstoreapp.dto.BookDto;
+import com.achdev.onlinebookstoreapp.dto.BookSearchParameters;
 import com.achdev.onlinebookstoreapp.dto.CreateBookRequestDto;
 import com.achdev.onlinebookstoreapp.service.BookService;
 import java.util.List;
@@ -32,6 +33,12 @@ public class BookController {
         return bookService.findById(id);
     }
 
+    @GetMapping("/search")
+    public List<BookDto> searchBooks(BookSearchParameters parameters) {
+        return bookService.findAllByParameters(parameters);
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public BookDto createBook(@RequestBody CreateBookRequestDto requestDto) {
         return bookService.save(requestDto);
