@@ -10,7 +10,7 @@ public interface BookService {
 
     BookDto findById(Long id);
 
-    List<BookDto> findAllByParameters(BookSearchParameters parameters);
+    List<BookDto> search(BookSearchParameters parameters);
 
     BookDto save(CreateBookRequestDto requestDto);
 
