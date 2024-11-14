@@ -13,6 +13,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -43,12 +44,14 @@ public class BookServiceImpl implements BookService {
                 .toList();
     }
 
+    @Transactional
     @Override
     public BookDto save(CreateBookRequestDto requestDto) {
         Book book = bookMapper.toModel(requestDto);
         return bookMapper.toDto(bookRepository.save(book));
     }
 
+    @Transactional
     @Override
     public BookDto updateById(Long id, CreateBookRequestDto requestDto) {
         Book book = bookRepository.findById(id)
@@ -57,6 +60,7 @@ public class BookServiceImpl implements BookService {
         return bookMapper.toDto(bookRepository.save(book));
     }
 
+    @Transactional
     @Override
     public void deleteById(Long id) {
         bookRepository.deleteById(id);
