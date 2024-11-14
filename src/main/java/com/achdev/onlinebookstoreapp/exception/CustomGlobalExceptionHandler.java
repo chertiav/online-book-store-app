@@ -31,7 +31,7 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
                 .map(this::getErrorMessage)
                 .toList();
         errors.put("errors", errorMessages);
-        return new ResponseEntity<>(errors, headers, status);
+        return new ResponseEntity<>(errors, headers, HttpStatus.BAD_REQUEST);
     }
 
     private String getErrorMessage(ObjectError e) {
