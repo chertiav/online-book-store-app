@@ -1,6 +1,6 @@
 package com.achdev.onlinebookstoreapp.repository.book;
 
-import com.achdev.onlinebookstoreapp.dto.BookSearchParameters;
+import com.achdev.onlinebookstoreapp.dto.book.BookSearchParameters;
 import com.achdev.onlinebookstoreapp.model.Book;
 import com.achdev.onlinebookstoreapp.repository.SpecificationBuilder;
 import com.achdev.onlinebookstoreapp.repository.SpecificationProviderManager;
