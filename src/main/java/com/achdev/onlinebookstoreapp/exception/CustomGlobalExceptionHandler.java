@@ -1,9 +1,10 @@
 package com.achdev.onlinebookstoreapp.exception;
 
+import com.achdev.onlinebookstoreapp.dto.errors.EntityNotFoundErrorResponseDto;
+import com.achdev.onlinebookstoreapp.dto.errors.ErrorDetailDto;
+import com.achdev.onlinebookstoreapp.dto.errors.ValidationErrorResponseDto;
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -13,6 +14,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -24,26 +26,42 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
             @NonNull HttpHeaders headers,
             @NonNull HttpStatusCode status,
             @NonNull WebRequest request) {
-        Map<String, Object> errors = new LinkedHashMap<>();
-        errors.put("timestamp", LocalDateTime.now());
-        errors.put("status", HttpStatus.BAD_REQUEST);
-        List<String> errorMessages = ex.getBindingResult().getAllErrors().stream()
-                .map(this::getErrorMessage)
+        ValidationErrorResponseDto errorResponse = new ValidationErrorResponseDto();
+        errorResponse.setTimestamp(LocalDateTime.now());
+        errorResponse.setStatus(HttpStatus.BAD_REQUEST.getReasonPhrase());
+        List<ErrorDetailDto> errorMessages = ex.getBindingResult().getAllErrors().stream()
+                .map(this::getErrorDetails)
                 .toList();
-        errors.put("errors", errorMessages);
-        return new ResponseEntity<>(errors, headers, HttpStatus.BAD_REQUEST);
+        errorResponse.setErrors(errorMessages);
+        return new ResponseEntity<>(errorResponse, headers, HttpStatus.BAD_REQUEST);
     }
 
-    private String getErrorMessage(ObjectError e) {
-        if (e instanceof FieldError fieldError) {
-            return fieldError.getField() + ": " + getMessage(e);
+    @ExceptionHandler(EntityNotFoundException.class)
+    protected ResponseEntity<Object> handleEntityNotFoundException(
+            EntityNotFoundException ex,
+            @NonNull WebRequest request) {
+        EntityNotFoundErrorResponseDto exceptionResponseDto =
+                new EntityNotFoundErrorResponseDto();
+        exceptionResponseDto.setTimestamp(LocalDateTime.now());
+        exceptionResponseDto.setStatus(HttpStatus.NOT_FOUND.getReasonPhrase());
+        exceptionResponseDto.setError("Entity not found");
+        exceptionResponseDto.setMessage(ex.getMessage() != null
+                ? ex.getMessage()
+                : "Object was not found");
+        exceptionResponseDto.setPath(request.getDescription(false));
+        return new ResponseEntity<>(exceptionResponseDto, HttpStatus.NOT_FOUND);
+    }
+
+    private ErrorDetailDto getErrorDetails(ObjectError e) {
+        ErrorDetailDto errorDetail = new ErrorDetailDto();
+        if (e instanceof FieldError) {
+            errorDetail.setField(((FieldError) e).getField());
+        } else {
+            errorDetail.setField(e.getObjectName());
         }
-        return getMessage(e);
-    }
-
-    private String getMessage(ObjectError e) {
-        return e.getDefaultMessage() != null
+        errorDetail.setMessage(e.getDefaultMessage() != null
                 ? e.getDefaultMessage()
-                : "Something went wrong, please check your input";
+                : "Something went wrong, please check your input");
+        return errorDetail;
     }
 }
