@@ -1,16 +1,17 @@
 package com.achdev.onlinebookstoreapp.service;
 
-import com.achdev.onlinebookstoreapp.dto.BookDto;
-import com.achdev.onlinebookstoreapp.dto.BookSearchParameters;
-import com.achdev.onlinebookstoreapp.dto.CreateBookRequestDto;
-import java.util.List;
+import com.achdev.onlinebookstoreapp.dto.book.BookDto;
+import com.achdev.onlinebookstoreapp.dto.book.BookSearchParameters;
+import com.achdev.onlinebookstoreapp.dto.book.CreateBookRequestDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface BookService {
-    List<BookDto> findAll();
+    Page<BookDto> findAll(Pageable pageable);
 
     BookDto findById(Long id);
 
-    List<BookDto> search(BookSearchParameters parameters);
+    Page<BookDto> search(BookSearchParameters searchParameters, Pageable pageable);
 
     BookDto save(CreateBookRequestDto requestDto);
 

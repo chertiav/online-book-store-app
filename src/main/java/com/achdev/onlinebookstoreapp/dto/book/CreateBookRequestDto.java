@@ -1,4 +1,4 @@
-package com.achdev.onlinebookstoreapp.dto;
+package com.achdev.onlinebookstoreapp.dto.book;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Digits;
