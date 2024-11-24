@@ -1,12 +1,11 @@
 package com.achdev.onlinebookstoreapp.dto.errors;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
-public class ValidationErrorResponseDto {
-    private LocalDateTime timestamp;
-    private String status;
+@Getter
+@Setter
+public class ValidationErrorResponseDto extends BaseErrorDto {
     private List<ErrorDetailDto> errors;
 }

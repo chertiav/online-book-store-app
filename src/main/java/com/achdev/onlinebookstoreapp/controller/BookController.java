@@ -4,6 +4,7 @@ import com.achdev.onlinebookstoreapp.dto.book.BookDto;
 import com.achdev.onlinebookstoreapp.dto.book.BookSearchParameters;
 import com.achdev.onlinebookstoreapp.dto.book.CreateBookRequestDto;
 import com.achdev.onlinebookstoreapp.dto.errors.EntityNotFoundErrorResponseDto;
+import com.achdev.onlinebookstoreapp.dto.errors.InstanceCreationErrorDto;
 import com.achdev.onlinebookstoreapp.dto.errors.ValidationErrorResponseDto;
 import com.achdev.onlinebookstoreapp.dto.page.PageResponse;
 import com.achdev.onlinebookstoreapp.service.BookService;
@@ -36,6 +37,7 @@ public class BookController {
     private static final String RESPONSE_CODE_CREATED = "201";
     private static final String RESPONSE_CODE_BAD_REQUEST = "400";
     private static final String RESPONSE_CODE_NOT_FOUND = "404";
+    private static final String RESPONSE_CODE_INTERNAL_SERVER_ERROR = "500";
     private final BookService bookService;
 
     @Operation(
@@ -64,6 +66,11 @@ public class BookController {
                             description = "Book not found",
                             content = @Content(schema = @Schema(
                                     implementation = EntityNotFoundErrorResponseDto.class))
+                    ),
+                    @ApiResponse(responseCode = RESPONSE_CODE_INTERNAL_SERVER_ERROR,
+                            description = "Internal server error",
+                            content = @Content(schema = @Schema(
+                                    implementation = InstanceCreationErrorDto.class))
                     )
             }
     )
@@ -99,6 +106,11 @@ public class BookController {
                             description = "Invalid request",
                             content = @Content(schema = @Schema(
                                     implementation = ValidationErrorResponseDto.class))
+                    ),
+                    @ApiResponse(responseCode = RESPONSE_CODE_INTERNAL_SERVER_ERROR,
+                            description = "Internal server error",
+                            content = @Content(schema = @Schema(
+                                    implementation = InstanceCreationErrorDto.class))
                     )
             }
     )
@@ -120,6 +132,11 @@ public class BookController {
                             description = "Book not found",
                             content = @Content(schema = @Schema(implementation =
                                     EntityNotFoundErrorResponseDto.class))
+                    ),
+                    @ApiResponse(responseCode = RESPONSE_CODE_INTERNAL_SERVER_ERROR,
+                            description = "Internal server error",
+                            content = @Content(schema = @Schema(
+                                    implementation = InstanceCreationErrorDto.class))
                     )
             }
     )
