@@ -37,6 +37,3 @@ databaseChangeLog:
               - column:
                   name: shipping_address
                   type: VARCHAR(255)
-
-
-

@@ -3,7 +3,6 @@ package com.achdev.onlinebookstoreapp.dto.user;
 import com.achdev.onlinebookstoreapp.validation.FieldMatch;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
@@ -37,6 +36,5 @@ public class UserRegistrationRequestDto {
     @NotBlank(message = "Last name is mandatory")
     private String lastName;
 
-    @NotNull(message = "Shipping address cannot be null")
     private String shippingAddress;
 }
