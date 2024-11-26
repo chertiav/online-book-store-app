@@ -1,7 +1,6 @@
 package com.achdev.onlinebookstoreapp.controller;
 
-import com.achdev.onlinebookstoreapp.dto.errors.InstanceCreationErrorDto;
-import com.achdev.onlinebookstoreapp.dto.errors.ValidationErrorResponseDto;
+import com.achdev.onlinebookstoreapp.dto.errors.BookApiErrorResponse;
 import com.achdev.onlinebookstoreapp.dto.user.UserDto;
 import com.achdev.onlinebookstoreapp.dto.user.UserRegistrationRequestDto;
 import com.achdev.onlinebookstoreapp.exception.RegistrationException;
@@ -25,7 +24,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
     private static final String RESPONSE_CODE_CREATED = "201";
     private static final String RESPONSE_CODE_BAD_REQUEST = "400";
-    private static final String RESPONSE_CODE_INTERNAL_SERVER_ERROR = "500";
     private final UserService userService;
 
     @Operation(
@@ -39,13 +37,8 @@ public class AuthenticationController {
                     @ApiResponse(responseCode = RESPONSE_CODE_BAD_REQUEST,
                             description = "Invalid request",
                             content = @Content(schema = @Schema(
-                                    implementation = ValidationErrorResponseDto.class))
+                                    implementation = BookApiErrorResponse.class))
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_INTERNAL_SERVER_ERROR,
-                            description = "Internal server error",
-                            content = @Content(schema = @Schema(
-                                    implementation = InstanceCreationErrorDto.class))
-                    )
             }
     )
     @ResponseStatus(HttpStatus.CREATED)

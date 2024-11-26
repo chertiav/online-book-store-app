@@ -3,9 +3,7 @@ package com.achdev.onlinebookstoreapp.controller;
 import com.achdev.onlinebookstoreapp.dto.book.BookDto;
 import com.achdev.onlinebookstoreapp.dto.book.BookSearchParameters;
 import com.achdev.onlinebookstoreapp.dto.book.CreateBookRequestDto;
-import com.achdev.onlinebookstoreapp.dto.errors.EntityNotFoundErrorResponseDto;
-import com.achdev.onlinebookstoreapp.dto.errors.InstanceCreationErrorDto;
-import com.achdev.onlinebookstoreapp.dto.errors.ValidationErrorResponseDto;
+import com.achdev.onlinebookstoreapp.dto.errors.BookApiErrorResponse;
 import com.achdev.onlinebookstoreapp.dto.page.PageResponse;
 import com.achdev.onlinebookstoreapp.service.BookService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,7 +35,6 @@ public class BookController {
     private static final String RESPONSE_CODE_CREATED = "201";
     private static final String RESPONSE_CODE_BAD_REQUEST = "400";
     private static final String RESPONSE_CODE_NOT_FOUND = "404";
-    private static final String RESPONSE_CODE_INTERNAL_SERVER_ERROR = "500";
     private final BookService bookService;
 
     @Operation(
@@ -65,13 +62,8 @@ public class BookController {
                     @ApiResponse(responseCode = RESPONSE_CODE_NOT_FOUND,
                             description = "Book not found",
                             content = @Content(schema = @Schema(
-                                    implementation = EntityNotFoundErrorResponseDto.class))
+                                    implementation = BookApiErrorResponse.class))
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_INTERNAL_SERVER_ERROR,
-                            description = "Internal server error",
-                            content = @Content(schema = @Schema(
-                                    implementation = InstanceCreationErrorDto.class))
-                    )
             }
     )
     @GetMapping("/{id}")
@@ -105,13 +97,8 @@ public class BookController {
                     @ApiResponse(responseCode = RESPONSE_CODE_BAD_REQUEST,
                             description = "Invalid request",
                             content = @Content(schema = @Schema(
-                                    implementation = ValidationErrorResponseDto.class))
+                                    implementation = BookApiErrorResponse.class))
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_INTERNAL_SERVER_ERROR,
-                            description = "Internal server error",
-                            content = @Content(schema = @Schema(
-                                    implementation = InstanceCreationErrorDto.class))
-                    )
             }
     )
     @ResponseStatus(HttpStatus.CREATED)
@@ -131,13 +118,8 @@ public class BookController {
                     @ApiResponse(responseCode = RESPONSE_CODE_NOT_FOUND,
                             description = "Book not found",
                             content = @Content(schema = @Schema(implementation =
-                                    EntityNotFoundErrorResponseDto.class))
+                                    BookApiErrorResponse.class))
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_INTERNAL_SERVER_ERROR,
-                            description = "Internal server error",
-                            content = @Content(schema = @Schema(
-                                    implementation = InstanceCreationErrorDto.class))
-                    )
             }
     )
     @PutMapping("/{id}")
