@@ -1,10 +1,8 @@
 package com.achdev.onlinebookstoreapp.exception;
 
-import com.achdev.onlinebookstoreapp.dto.errors.EntityNotFoundErrorResponseDto;
+import com.achdev.onlinebookstoreapp.dto.errors.BookApiErrorResponse;
 import com.achdev.onlinebookstoreapp.dto.errors.ErrorDetailDto;
-import com.achdev.onlinebookstoreapp.dto.errors.ValidationErrorResponseDto;
 import java.time.LocalDateTime;
-import java.util.List;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -26,30 +24,40 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
             @NonNull HttpHeaders headers,
             @NonNull HttpStatusCode status,
             @NonNull WebRequest request) {
-        ValidationErrorResponseDto errorResponse = new ValidationErrorResponseDto();
-        errorResponse.setTimestamp(LocalDateTime.now());
-        errorResponse.setStatus(HttpStatus.BAD_REQUEST.getReasonPhrase());
-        List<ErrorDetailDto> errorMessages = ex.getBindingResult().getAllErrors().stream()
-                .map(this::getErrorDetails)
-                .toList();
-        errorResponse.setErrors(errorMessages);
-        return new ResponseEntity<>(errorResponse, headers, HttpStatus.BAD_REQUEST);
+        return buildResponseEntity(
+                HttpStatus.BAD_REQUEST,
+                LocalDateTime.now(),
+                ex.getBindingResult().getAllErrors().stream()
+                        .map(this::getErrorDetails)
+                        .toList()
+        );
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    protected ResponseEntity<Object> handleEntityNotFoundException(
-            EntityNotFoundException ex,
-            @NonNull WebRequest request) {
-        EntityNotFoundErrorResponseDto exceptionResponseDto =
-                new EntityNotFoundErrorResponseDto();
-        exceptionResponseDto.setTimestamp(LocalDateTime.now());
-        exceptionResponseDto.setStatus(HttpStatus.NOT_FOUND.getReasonPhrase());
-        exceptionResponseDto.setError("Entity not found");
-        exceptionResponseDto.setMessage(ex.getMessage() != null
-                ? ex.getMessage()
-                : "Object was not found");
-        exceptionResponseDto.setPath(request.getDescription(false));
-        return new ResponseEntity<>(exceptionResponseDto, HttpStatus.NOT_FOUND);
+    protected ResponseEntity<Object> handleEntityNotFoundException(EntityNotFoundException ex) {
+        return buildResponseEntity(
+                HttpStatus.NOT_FOUND,
+                LocalDateTime.now(),
+                getErrorMessage(ex, "Entity was not found")
+        );
+    }
+
+    @ExceptionHandler(RegistrationException.class)
+    protected ResponseEntity<Object> handleRegistrationException(RegistrationException ex) {
+        return buildResponseEntity(
+                HttpStatus.BAD_REQUEST,
+                LocalDateTime.now(),
+                getErrorMessage(ex, "Bad credentials for registration")
+        );
+    }
+
+    private ResponseEntity<Object> buildResponseEntity(
+            HttpStatus status,
+            LocalDateTime timestamp,
+            Object errorMessages) {
+        BookApiErrorResponse exceptionResponseDto =
+                new BookApiErrorResponse(status, timestamp, errorMessages);
+        return new ResponseEntity<>(exceptionResponseDto, status);
     }
 
     private ErrorDetailDto getErrorDetails(ObjectError e) {
@@ -61,7 +69,11 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
         }
         errorDetail.setMessage(e.getDefaultMessage() != null
                 ? e.getDefaultMessage()
-                : "Something went wrong, please check your input");
+                : "Validation failed for object, please check your input");
         return errorDetail;
+    }
+
+    private String getErrorMessage(Exception ex, String message) {
+        return ex.getMessage() != null ? ex.getMessage() : message;
     }
 }

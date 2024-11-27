@@ -3,8 +3,7 @@ package com.achdev.onlinebookstoreapp.controller;
 import com.achdev.onlinebookstoreapp.dto.book.BookDto;
 import com.achdev.onlinebookstoreapp.dto.book.BookSearchParameters;
 import com.achdev.onlinebookstoreapp.dto.book.CreateBookRequestDto;
-import com.achdev.onlinebookstoreapp.dto.errors.EntityNotFoundErrorResponseDto;
-import com.achdev.onlinebookstoreapp.dto.errors.ValidationErrorResponseDto;
+import com.achdev.onlinebookstoreapp.dto.errors.BookApiErrorResponse;
 import com.achdev.onlinebookstoreapp.dto.page.PageResponse;
 import com.achdev.onlinebookstoreapp.service.BookService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -63,8 +62,8 @@ public class BookController {
                     @ApiResponse(responseCode = RESPONSE_CODE_NOT_FOUND,
                             description = "Book not found",
                             content = @Content(schema = @Schema(
-                                    implementation = EntityNotFoundErrorResponseDto.class))
-                    )
+                                    implementation = BookApiErrorResponse.class))
+                    ),
             }
     )
     @GetMapping("/{id}")
@@ -98,8 +97,8 @@ public class BookController {
                     @ApiResponse(responseCode = RESPONSE_CODE_BAD_REQUEST,
                             description = "Invalid request",
                             content = @Content(schema = @Schema(
-                                    implementation = ValidationErrorResponseDto.class))
-                    )
+                                    implementation = BookApiErrorResponse.class))
+                    ),
             }
     )
     @ResponseStatus(HttpStatus.CREATED)
@@ -119,8 +118,8 @@ public class BookController {
                     @ApiResponse(responseCode = RESPONSE_CODE_NOT_FOUND,
                             description = "Book not found",
                             content = @Content(schema = @Schema(implementation =
-                                    EntityNotFoundErrorResponseDto.class))
-                    )
+                                    BookApiErrorResponse.class))
+                    ),
             }
     )
     @PutMapping("/{id}")
