@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -51,6 +52,15 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
         );
     }
 
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    protected ResponseEntity<Object> handleRegistrationException(AuthorizationDeniedException ex) {
+        return buildResponseEntity(
+                HttpStatus.FORBIDDEN,
+                LocalDateTime.now(),
+                getErrorMessage(ex, "Access denied")
+        );
+    }
+
     private ResponseEntity<Object> buildResponseEntity(
             HttpStatus status,
             LocalDateTime timestamp,
@@ -73,7 +83,7 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
         return errorDetail;
     }
 
-    private String getErrorMessage(Exception ex, String message) {
-        return ex.getMessage() != null ? ex.getMessage() : message;
+    private String getErrorMessage(Exception ex, String defaultMessage) {
+        return ex.getMessage() != null ? ex.getMessage() : defaultMessage;
     }
 }

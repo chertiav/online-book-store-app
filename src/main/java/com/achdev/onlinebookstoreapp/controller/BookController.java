@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,17 +35,26 @@ public class BookController {
     private static final String RESPONSE_CODE_OK = "200";
     private static final String RESPONSE_CODE_CREATED = "201";
     private static final String RESPONSE_CODE_BAD_REQUEST = "400";
+    private static final String RESPONSE_CODE_FORBIDDEN = "403";
     private static final String RESPONSE_CODE_NOT_FOUND = "404";
     private final BookService bookService;
 
     @Operation(
             summary = "Get all books",
             description = "Retrieve a paginated list of all books",
-            responses = @ApiResponse(
-                    responseCode = RESPONSE_CODE_OK,
-                    description = "Successfully retrieved list of books"
-            )
+            responses = {
+                    @ApiResponse(
+                            responseCode = RESPONSE_CODE_OK,
+                            description = "Successfully retrieved list of books"
+                    ),
+                    @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
+                            description = "Access denied",
+                            content = @Content(schema = @Schema(
+                                    implementation = BookApiErrorResponse.class))
+                    )
+            }
     )
+    @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping
     public PageResponse<BookDto> getAll(Pageable pageable) {
         Page<BookDto> page = bookService.findAll(pageable);
@@ -64,8 +74,14 @@ public class BookController {
                             content = @Content(schema = @Schema(
                                     implementation = BookApiErrorResponse.class))
                     ),
+                    @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
+                            description = "Access denied",
+                            content = @Content(schema = @Schema(
+                                    implementation = BookApiErrorResponse.class))
+                    )
             }
     )
+    @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/{id}")
     public BookDto getBookById(@PathVariable Long id) {
         return bookService.findById(id);
@@ -74,11 +90,19 @@ public class BookController {
     @Operation(
             summary = "Search books by parameters",
             description = "Retrieve a paginated list of all searched books by parameters",
-            responses = @ApiResponse(
-                    responseCode = RESPONSE_CODE_OK,
-                    description = "Successfully retrieved a paginated list of books"
-            )
+            responses = {
+                    @ApiResponse(
+                            responseCode = RESPONSE_CODE_OK,
+                            description = "Successfully retrieved a paginated list of books"
+                    ),
+                    @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
+                            description = "Access denied",
+                            content = @Content(schema = @Schema(
+                                    implementation = BookApiErrorResponse.class))
+                    )
+            }
     )
+    @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/search")
     public PageResponse<BookDto> searchBooks(BookSearchParameters searchParameters,
                                              Pageable pageable) {
@@ -99,9 +123,15 @@ public class BookController {
                             content = @Content(schema = @Schema(
                                     implementation = BookApiErrorResponse.class))
                     ),
+                    @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
+                            description = "Access denied",
+                            content = @Content(schema = @Schema(
+                                    implementation = BookApiErrorResponse.class))
+                    )
             }
     )
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
     public BookDto createBook(@RequestBody @Valid CreateBookRequestDto requestDto) {
         return bookService.save(requestDto);
@@ -120,8 +150,14 @@ public class BookController {
                             content = @Content(schema = @Schema(implementation =
                                     BookApiErrorResponse.class))
                     ),
+                    @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
+                            description = "Access denied",
+                            content = @Content(schema = @Schema(
+                                    implementation = BookApiErrorResponse.class))
+                    )
             }
     )
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public BookDto updateBook(@PathVariable Long id,
                               @RequestBody @Valid CreateBookRequestDto requestDto) {
@@ -130,8 +166,17 @@ public class BookController {
 
     @Operation(
             summary = "Delete a book by Id",
-            description = "Delete a book by Id")
+            description = "Delete a book by Id",
+            responses = {
+                    @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
+                            description = "Access denied",
+                            content = @Content(schema = @Schema(
+                                    implementation = BookApiErrorResponse.class))
+                    )
+            }
+    )
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public void deleteBook(@PathVariable Long id) {
         bookService.deleteById(id);

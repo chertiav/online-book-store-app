@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-public class AuthenticationController {
+public class AuthController {
     private static final String RESPONSE_CODE_CREATED = "201";
     private static final String RESPONSE_CODE_BAD_REQUEST = "400";
     private final UserService userService;

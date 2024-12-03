@@ -3,7 +3,9 @@ package com.achdev.onlinebookstoreapp.dto.user;
 import com.achdev.onlinebookstoreapp.validation.FieldMatch;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
+import java.util.List;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
@@ -23,8 +25,9 @@ public class UserRegistrationRequestDto {
             message = "Password must be between 8 and 35 characters")
     @Pattern(
             regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&*+=]).{8,35}$",
-            message = "Password must contain at least one digit, one lowercase letter, "
-                      + "one uppercase letter, and one special character"
+            message = "Password must be between 8 and 35 characters long and "
+                      + "contain at least one digit, one lowercase letter, "
+                      + "one uppercase letter, and one special character."
     )
     private String password;
 
@@ -37,4 +40,7 @@ public class UserRegistrationRequestDto {
     private String lastName;
 
     private String shippingAddress;
+
+    @NotEmpty(message = "List of roles cannot be empty")
+    private List<Long> roles;
 }
