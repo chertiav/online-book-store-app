@@ -1,5 +1,6 @@
 package com.achdev.onlinebookstoreapp.security;
 
+import com.achdev.onlinebookstoreapp.exception.EntityNotFoundException;
 import com.achdev.onlinebookstoreapp.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,7 +16,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return userRepository.findByEmailWithRoles(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Can't find user by email: "
-                                                                 + email));
+                .orElseThrow(() -> new EntityNotFoundException("Can't find user by email: "
+                                                               + email));
     }
 }
