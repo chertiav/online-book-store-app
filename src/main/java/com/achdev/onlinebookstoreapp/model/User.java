@@ -61,12 +61,6 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private boolean isDeleted = false;
 
-    public User() {
-        Role defaultRole = new Role();
-        defaultRole.setName(Role.RoleName.USER);
-        this.roles.add(defaultRole);
-    }
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream()

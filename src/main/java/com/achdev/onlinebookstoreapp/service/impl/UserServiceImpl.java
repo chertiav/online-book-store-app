@@ -6,10 +6,12 @@ import com.achdev.onlinebookstoreapp.exception.EntityNotFoundException;
 import com.achdev.onlinebookstoreapp.exception.RegistrationException;
 import com.achdev.onlinebookstoreapp.mapper.UserMapper;
 import com.achdev.onlinebookstoreapp.model.Role;
+import com.achdev.onlinebookstoreapp.model.Role.RoleName;
 import com.achdev.onlinebookstoreapp.model.User;
 import com.achdev.onlinebookstoreapp.repository.role.RoleRepository;
 import com.achdev.onlinebookstoreapp.repository.user.UserRepository;
 import com.achdev.onlinebookstoreapp.service.UserService;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,17 +29,13 @@ public class UserServiceImpl implements UserService {
             throw new RegistrationException("User with email: " + email + " already exists");
         }
         User user = userMapper.toModel(requestDto);
-        setRoleIdsForUser(user);
+        user.setRoles(getSetOfUserRole());
         return userMapper.toDto(userRepository.save(user));
     }
 
-    private void setRoleIdsForUser(User user) {
-        user.getRoles().forEach(role -> {
-            Role existingRole = roleRepository
-                    .findByName(((role.getName())))
-                    .orElseThrow(() ->
-                            new EntityNotFoundException("Role not found role: " + role.getName()));
-            role.setId(existingRole.getId());
-        });
+    private Set<Role> getSetOfUserRole() {
+        return Set.of(roleRepository.findByName(RoleName.USER)
+                .orElseThrow(() -> new EntityNotFoundException("Role not found role: "
+                                                               + RoleName.USER.name())));
     }
 }
