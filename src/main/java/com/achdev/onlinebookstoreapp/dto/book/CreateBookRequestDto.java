@@ -20,7 +20,9 @@ public class CreateBookRequestDto {
 
     @NotBlank(message = "ISBN is mandatory")
     @Pattern(regexp = "^(97(8|9))?\\d{9}(\\d|X)$",
-            message = "Invalid ISBN format")
+            message = "Invalid ISBN format, it should start with 978 or 979 "
+                      + "and consist of 10 digits, including a checksum digit, "
+                      + "which can be a number or the letter X")
     private String isbn;
 
     @NotNull(message = "Price cannot be null")
