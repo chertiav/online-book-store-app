@@ -8,6 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
 
-    @Query(value = "SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.email = :email")
+    @Query(value = "SELECT u FROM User u INNER JOIN FETCH u.roles WHERE u.email = :email")
     Optional<User> findByEmailWithRoles(String email);
 }
