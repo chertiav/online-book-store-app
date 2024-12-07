@@ -9,7 +9,7 @@ import com.achdev.onlinebookstoreapp.model.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(config = MapperConfig.class, uses = PasswordEncoderMapper.class)
+@Mapper(config = MapperConfig.class, uses = {PasswordEncoderMapper.class})
 public interface UserMapper {
     UserDto toDto(User user);
 
