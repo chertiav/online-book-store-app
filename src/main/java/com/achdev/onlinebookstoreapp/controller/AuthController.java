@@ -1,6 +1,6 @@
 package com.achdev.onlinebookstoreapp.controller;
 
-import com.achdev.onlinebookstoreapp.dto.errors.BookApiErrorResponse;
+import com.achdev.onlinebookstoreapp.dto.errors.CommonApiErrorResponse;
 import com.achdev.onlinebookstoreapp.dto.user.UserDto;
 import com.achdev.onlinebookstoreapp.dto.user.UserLoginRequestDto;
 import com.achdev.onlinebookstoreapp.dto.user.UserLoginResponseDto;
@@ -44,7 +44,7 @@ public class AuthController {
                     @ApiResponse(responseCode = RESPONSE_CODE_BAD_REQUEST,
                             description = "Invalid request",
                             content = @Content(schema = @Schema(
-                                    implementation = BookApiErrorResponse.class))
+                                    implementation = CommonApiErrorResponse.class))
                     )
             }
     )
@@ -66,12 +66,12 @@ public class AuthController {
                     @ApiResponse(responseCode = RESPONSE_CODE_BAD_REQUEST,
                             description = "Invalid request",
                             content = @Content(schema = @Schema(
-                                    implementation = BookApiErrorResponse.class))
+                                    implementation = CommonApiErrorResponse.class))
                     ),
                     @ApiResponse(responseCode = RESPONSE_CODE_NOT_FOUND,
                             description = "Not found",
                             content = @Content(schema = @Schema(
-                                    implementation = BookApiErrorResponse.class))
+                                    implementation = CommonApiErrorResponse.class))
                     ),
                     @ApiResponse(responseCode = RESPONSE_CODE_UNAUTHORIZED,
                             description = "Unauthorized"

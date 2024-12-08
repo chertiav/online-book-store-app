@@ -1,11 +1,11 @@
 package com.achdev.onlinebookstoreapp.controller;
 
-import com.achdev.onlinebookstoreapp.dto.book.BookDto;
-import com.achdev.onlinebookstoreapp.dto.book.BookSearchParameters;
-import com.achdev.onlinebookstoreapp.dto.book.CreateBookRequestDto;
+import com.achdev.onlinebookstoreapp.dto.book.BookDtoWithoutCategoryIds;
+import com.achdev.onlinebookstoreapp.dto.category.CategoryDto;
+import com.achdev.onlinebookstoreapp.dto.category.CreateCategoryRequestDto;
 import com.achdev.onlinebookstoreapp.dto.errors.CommonApiErrorResponse;
 import com.achdev.onlinebookstoreapp.dto.page.PageResponse;
-import com.achdev.onlinebookstoreapp.service.BookService;
+import com.achdev.onlinebookstoreapp.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,25 +27,25 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Book management", description = "Endpoints for managing books")
+@Tag(name = "Categories management", description = "Endpoints for managing categories")
 @RestController
-@RequestMapping("/books")
+@RequestMapping("/categories")
 @RequiredArgsConstructor
-public class BookController {
+public class CategoryController {
     private static final String RESPONSE_CODE_OK = "200";
     private static final String RESPONSE_CODE_CREATED = "201";
     private static final String RESPONSE_CODE_BAD_REQUEST = "400";
     private static final String RESPONSE_CODE_FORBIDDEN = "403";
     private static final String RESPONSE_CODE_NOT_FOUND = "404";
-    private final BookService bookService;
+    private final CategoryService categoryService;
 
     @Operation(
-            summary = "Get all books",
-            description = "Retrieve a paginated list of all books",
+            summary = "Get all categories",
+            description = "Retrieve a paginated list of all categories",
             responses = {
                     @ApiResponse(
                             responseCode = RESPONSE_CODE_OK,
-                            description = "Successfully retrieved list of books"
+                            description = "Successfully retrieved list of categories"
                     ),
                     @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
                             description = "Access denied",
@@ -56,21 +56,46 @@ public class BookController {
     )
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping
-    public PageResponse<BookDto> getAll(Pageable pageable) {
-        Page<BookDto> page = bookService.findAll(pageable);
+    public PageResponse<CategoryDto> getAll(Pageable pageable) {
+        Page<CategoryDto> page = categoryService.findAll(pageable);
         return PageResponse.of(page);
     }
 
     @Operation(
-            summary = "Get book by ID",
-            description = "Retrieve a book by ID",
+            summary = "Get books by category",
+            description = "Retrieve a paginated list of books by category",
             responses = {
                     @ApiResponse(
                             responseCode = RESPONSE_CODE_OK,
-                            description = "Successfully retrieved book information"
+                            description = "Successfully retrieved list of books by category"
+                    ),
+                    @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
+                            description = "Access denied",
+                            content = @Content(schema = @Schema(
+                                    implementation = CommonApiErrorResponse.class))
+                    )
+            }
+    )
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping("/{id}/books")
+    public PageResponse<BookDtoWithoutCategoryIds> getBooksByCategoryId(
+            @PathVariable Long id,
+            Pageable pageable) {
+        Page<BookDtoWithoutCategoryIds> page = categoryService
+                .findAllBooksByCategoryId(id, pageable);
+        return PageResponse.of(page);
+    }
+
+    @Operation(
+            summary = "Get category by ID",
+            description = "Retrieve a category by ID",
+            responses = {
+                    @ApiResponse(
+                            responseCode = RESPONSE_CODE_OK,
+                            description = "Successfully retrieved category information"
                     ),
                     @ApiResponse(responseCode = RESPONSE_CODE_NOT_FOUND,
-                            description = "Book not found",
+                            description = "Category not found",
                             content = @Content(schema = @Schema(
                                     implementation = CommonApiErrorResponse.class))
                     ),
@@ -83,40 +108,17 @@ public class BookController {
     )
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/{id}")
-    public BookDto getBookById(@PathVariable Long id) {
-        return bookService.findById(id);
+    public CategoryDto getCategoryById(@PathVariable Long id) {
+        return categoryService.findById(id);
     }
 
     @Operation(
-            summary = "Search books by parameters",
-            description = "Retrieve a paginated list of all searched books by parameters",
-            responses = {
-                    @ApiResponse(
-                            responseCode = RESPONSE_CODE_OK,
-                            description = "Successfully retrieved a paginated list of books"
-                    ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
-                            description = "Access denied",
-                            content = @Content(schema = @Schema(
-                                    implementation = CommonApiErrorResponse.class))
-                    )
-            }
-    )
-    @PreAuthorize("hasRole('ROLE_USER')")
-    @GetMapping("/search")
-    public PageResponse<BookDto> searchBooks(BookSearchParameters searchParameters,
-                                             Pageable pageable) {
-        Page<BookDto> page = bookService.search(searchParameters, pageable);
-        return PageResponse.of(page);
-    }
-
-    @Operation(
-            summary = "Create a new book",
-            description = "Create a new book",
+            summary = "Create a new category",
+            description = "Create a new category",
             responses = {
                     @ApiResponse(
                             responseCode = RESPONSE_CODE_CREATED,
-                            description = "Successfully created a new book"
+                            description = "Successfully created a new category"
                     ),
                     @ApiResponse(responseCode = RESPONSE_CODE_BAD_REQUEST,
                             description = "Invalid request",
@@ -133,20 +135,20 @@ public class BookController {
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
-    public BookDto createBook(@RequestBody @Valid CreateBookRequestDto requestDto) {
-        return bookService.save(requestDto);
+    public CategoryDto createCategory(@RequestBody @Valid CreateCategoryRequestDto requestDto) {
+        return categoryService.save(requestDto);
     }
 
     @Operation(
-            summary = "Update a book by Id",
-            description = "Update a book by Id",
+            summary = "Update a category by Id",
+            description = "Update a category by Id",
             responses = {
                     @ApiResponse(
                             responseCode = RESPONSE_CODE_OK,
-                            description = "Successfully updated book information"
+                            description = "Successfully updated category information"
                     ),
                     @ApiResponse(responseCode = RESPONSE_CODE_NOT_FOUND,
-                            description = "Book not found",
+                            description = "Category not found",
                             content = @Content(schema = @Schema(implementation =
                                     CommonApiErrorResponse.class))
                     ),
@@ -159,14 +161,14 @@ public class BookController {
     )
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
-    public BookDto updateBook(@PathVariable Long id,
-                              @RequestBody @Valid CreateBookRequestDto requestDto) {
-        return bookService.updateById(id, requestDto);
+    public CategoryDto updateCategory(@PathVariable Long id,
+                                      @RequestBody @Valid CreateCategoryRequestDto requestDto) {
+        return categoryService.updateById(id, requestDto);
     }
 
     @Operation(
-            summary = "Delete a book by Id",
-            description = "Delete a book by Id",
+            summary = "Delete a category by Id",
+            description = "Delete a category by Id",
             responses = {
                     @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
                             description = "Access denied",
@@ -178,7 +180,7 @@ public class BookController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
-    public void deleteBook(@PathVariable Long id) {
-        bookService.deleteById(id);
+    public void deleteCategory(@PathVariable Long id) {
+        categoryService.deleteById(id);
     }
 }

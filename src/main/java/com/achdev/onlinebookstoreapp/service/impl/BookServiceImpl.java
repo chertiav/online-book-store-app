@@ -1,14 +1,18 @@
 package com.achdev.onlinebookstoreapp.service.impl;
 
 import com.achdev.onlinebookstoreapp.dto.book.BookDto;
+import com.achdev.onlinebookstoreapp.dto.book.BookDtoWithoutCategoryIds;
 import com.achdev.onlinebookstoreapp.dto.book.BookSearchParameters;
 import com.achdev.onlinebookstoreapp.dto.book.CreateBookRequestDto;
 import com.achdev.onlinebookstoreapp.exception.EntityNotFoundException;
 import com.achdev.onlinebookstoreapp.mapper.BookMapper;
 import com.achdev.onlinebookstoreapp.model.Book;
+import com.achdev.onlinebookstoreapp.model.Category;
 import com.achdev.onlinebookstoreapp.repository.book.BookRepository;
 import com.achdev.onlinebookstoreapp.repository.book.BookSpecificationBuilder;
 import com.achdev.onlinebookstoreapp.service.BookService;
+import java.util.Collections;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +31,14 @@ public class BookServiceImpl implements BookService {
     public Page<BookDto> findAll(Pageable pageable) {
         return bookRepository.findAll(pageable)
                 .map(bookMapper::toDto);
+    }
+
+    @Override
+    public Page<BookDtoWithoutCategoryIds> findAllByCategoryId(Long categoryId, Pageable pageable) {
+        Category category = new Category(categoryId);
+        Set<Category> categorySet = Collections.singleton(category);
+        return bookRepository.findAllByCategories(categorySet, pageable)
+                .map(bookMapper::toDtoWithoutCategories);
     }
 
     @Override
