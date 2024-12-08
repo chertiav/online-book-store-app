@@ -1,6 +1,6 @@
 package com.achdev.onlinebookstoreapp.exception;
 
-import com.achdev.onlinebookstoreapp.dto.errors.BookApiErrorResponse;
+import com.achdev.onlinebookstoreapp.dto.errors.CommonApiErrorResponse;
 import com.achdev.onlinebookstoreapp.dto.errors.ErrorDetailDto;
 import java.time.LocalDateTime;
 import org.springframework.http.HttpHeaders;
@@ -65,8 +65,8 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
             HttpStatus status,
             LocalDateTime timestamp,
             Object errorMessages) {
-        BookApiErrorResponse exceptionResponseDto =
-                new BookApiErrorResponse(status, timestamp, errorMessages);
+        CommonApiErrorResponse exceptionResponseDto =
+                new CommonApiErrorResponse(status, timestamp, errorMessages);
         return new ResponseEntity<>(exceptionResponseDto, status);
     }
 
