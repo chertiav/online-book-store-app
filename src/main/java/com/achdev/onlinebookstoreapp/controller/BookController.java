@@ -6,6 +6,7 @@ import com.achdev.onlinebookstoreapp.dto.book.CreateBookRequestDto;
 import com.achdev.onlinebookstoreapp.dto.errors.CommonApiErrorResponse;
 import com.achdev.onlinebookstoreapp.dto.page.PageResponse;
 import com.achdev.onlinebookstoreapp.service.BookService;
+import com.achdev.onlinebookstoreapp.util.ApiResponseConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -32,11 +33,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/books")
 @RequiredArgsConstructor
 public class BookController {
-    private static final String RESPONSE_CODE_OK = "200";
-    private static final String RESPONSE_CODE_CREATED = "201";
-    private static final String RESPONSE_CODE_BAD_REQUEST = "400";
-    private static final String RESPONSE_CODE_FORBIDDEN = "403";
-    private static final String RESPONSE_CODE_NOT_FOUND = "404";
     private final BookService bookService;
 
     @Operation(
@@ -44,11 +40,11 @@ public class BookController {
             description = "Retrieve a paginated list of all books",
             responses = {
                     @ApiResponse(
-                            responseCode = RESPONSE_CODE_OK,
+                            responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
                             description = "Successfully retrieved list of books"
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
-                            description = "Access denied",
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
+                            description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
                             content = @Content(schema = @Schema(
                                     implementation = CommonApiErrorResponse.class))
                     )
@@ -66,16 +62,16 @@ public class BookController {
             description = "Retrieve a book by ID",
             responses = {
                     @ApiResponse(
-                            responseCode = RESPONSE_CODE_OK,
+                            responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
                             description = "Successfully retrieved book information"
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_NOT_FOUND,
-                            description = "Book not found",
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_NOT_FOUND,
+                            description = ApiResponseConstants.NOT_FOUND_DESCRIPTION,
                             content = @Content(schema = @Schema(
                                     implementation = CommonApiErrorResponse.class))
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
-                            description = "Access denied",
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
+                            description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
                             content = @Content(schema = @Schema(
                                     implementation = CommonApiErrorResponse.class))
                     )
@@ -92,11 +88,11 @@ public class BookController {
             description = "Retrieve a paginated list of all searched books by parameters",
             responses = {
                     @ApiResponse(
-                            responseCode = RESPONSE_CODE_OK,
+                            responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
                             description = "Successfully retrieved a paginated list of books"
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
-                            description = "Access denied",
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
+                            description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
                             content = @Content(schema = @Schema(
                                     implementation = CommonApiErrorResponse.class))
                     )
@@ -111,20 +107,20 @@ public class BookController {
     }
 
     @Operation(
-            summary = "Create a new book",
-            description = "Create a new book",
+            summary = ApiResponseConstants.BOOK_CREATE_DESCRIPTION,
+            description = ApiResponseConstants.BOOK_CREATE_DESCRIPTION,
             responses = {
                     @ApiResponse(
-                            responseCode = RESPONSE_CODE_CREATED,
+                            responseCode = ApiResponseConstants.RESPONSE_CODE_CREATED,
                             description = "Successfully created a new book"
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_BAD_REQUEST,
-                            description = "Invalid request",
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_BAD_REQUEST,
+                            description = ApiResponseConstants.INVALID_REQUEST_DESCRIPTION,
                             content = @Content(schema = @Schema(
                                     implementation = CommonApiErrorResponse.class))
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
-                            description = "Access denied",
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
+                            description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
                             content = @Content(schema = @Schema(
                                     implementation = CommonApiErrorResponse.class))
                     )
@@ -138,20 +134,20 @@ public class BookController {
     }
 
     @Operation(
-            summary = "Update a book by Id",
-            description = "Update a book by Id",
+            summary = ApiResponseConstants.BOOK_UPDATE_DESCRIPTION,
+            description = ApiResponseConstants.BOOK_UPDATE_DESCRIPTION,
             responses = {
                     @ApiResponse(
-                            responseCode = RESPONSE_CODE_OK,
+                            responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
                             description = "Successfully updated book information"
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_NOT_FOUND,
-                            description = "Book not found",
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_NOT_FOUND,
+                            description = ApiResponseConstants.NOT_FOUND_DESCRIPTION,
                             content = @Content(schema = @Schema(implementation =
                                     CommonApiErrorResponse.class))
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
-                            description = "Access denied",
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
+                            description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
                             content = @Content(schema = @Schema(
                                     implementation = CommonApiErrorResponse.class))
                     )
@@ -165,11 +161,11 @@ public class BookController {
     }
 
     @Operation(
-            summary = "Delete a book by Id",
-            description = "Delete a book by Id",
+            summary = ApiResponseConstants.BOOK_DELETE_DESCRIPTION,
+            description = ApiResponseConstants.BOOK_DELETE_DESCRIPTION,
             responses = {
-                    @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
-                            description = "Access denied",
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
+                            description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
                             content = @Content(schema = @Schema(
                                     implementation = CommonApiErrorResponse.class))
                     )

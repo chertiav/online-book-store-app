@@ -6,6 +6,7 @@ import com.achdev.onlinebookstoreapp.dto.category.CreateCategoryRequestDto;
 import com.achdev.onlinebookstoreapp.dto.errors.CommonApiErrorResponse;
 import com.achdev.onlinebookstoreapp.dto.page.PageResponse;
 import com.achdev.onlinebookstoreapp.service.CategoryService;
+import com.achdev.onlinebookstoreapp.util.ApiResponseConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -32,11 +33,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/categories")
 @RequiredArgsConstructor
 public class CategoryController {
-    private static final String RESPONSE_CODE_OK = "200";
-    private static final String RESPONSE_CODE_CREATED = "201";
-    private static final String RESPONSE_CODE_BAD_REQUEST = "400";
-    private static final String RESPONSE_CODE_FORBIDDEN = "403";
-    private static final String RESPONSE_CODE_NOT_FOUND = "404";
     private final CategoryService categoryService;
 
     @Operation(
@@ -44,11 +40,11 @@ public class CategoryController {
             description = "Retrieve a paginated list of all categories",
             responses = {
                     @ApiResponse(
-                            responseCode = RESPONSE_CODE_OK,
+                            responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
                             description = "Successfully retrieved list of categories"
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
-                            description = "Access denied",
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
+                            description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
                             content = @Content(schema = @Schema(
                                     implementation = CommonApiErrorResponse.class))
                     )
@@ -66,11 +62,11 @@ public class CategoryController {
             description = "Retrieve a paginated list of books by category",
             responses = {
                     @ApiResponse(
-                            responseCode = RESPONSE_CODE_OK,
+                            responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
                             description = "Successfully retrieved list of books by category"
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
-                            description = "Access denied",
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
+                            description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
                             content = @Content(schema = @Schema(
                                     implementation = CommonApiErrorResponse.class))
                     )
@@ -91,16 +87,16 @@ public class CategoryController {
             description = "Retrieve a category by ID",
             responses = {
                     @ApiResponse(
-                            responseCode = RESPONSE_CODE_OK,
+                            responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
                             description = "Successfully retrieved category information"
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_NOT_FOUND,
-                            description = "Category not found",
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_NOT_FOUND,
+                            description = ApiResponseConstants.NOT_FOUND_DESCRIPTION,
                             content = @Content(schema = @Schema(
                                     implementation = CommonApiErrorResponse.class))
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
-                            description = "Access denied",
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
+                            description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
                             content = @Content(schema = @Schema(
                                     implementation = CommonApiErrorResponse.class))
                     )
@@ -113,20 +109,20 @@ public class CategoryController {
     }
 
     @Operation(
-            summary = "Create a new category",
-            description = "Create a new category",
+            summary = ApiResponseConstants.CATEGORY_CREATE_DESCRIPTION,
+            description = ApiResponseConstants.CATEGORY_CREATE_DESCRIPTION,
             responses = {
                     @ApiResponse(
-                            responseCode = RESPONSE_CODE_CREATED,
+                            responseCode = ApiResponseConstants.RESPONSE_CODE_CREATED,
                             description = "Successfully created a new category"
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_BAD_REQUEST,
-                            description = "Invalid request",
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_BAD_REQUEST,
+                            description = ApiResponseConstants.INVALID_REQUEST_DESCRIPTION,
                             content = @Content(schema = @Schema(
                                     implementation = CommonApiErrorResponse.class))
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
-                            description = "Access denied",
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
+                            description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
                             content = @Content(schema = @Schema(
                                     implementation = CommonApiErrorResponse.class))
                     )
@@ -140,20 +136,20 @@ public class CategoryController {
     }
 
     @Operation(
-            summary = "Update a category by Id",
-            description = "Update a category by Id",
+            summary = ApiResponseConstants.CATEGORY_UPDATE_DESCRIPTION,
+            description = ApiResponseConstants.CATEGORY_UPDATE_DESCRIPTION,
             responses = {
                     @ApiResponse(
-                            responseCode = RESPONSE_CODE_OK,
+                            responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
                             description = "Successfully updated category information"
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_NOT_FOUND,
-                            description = "Category not found",
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_NOT_FOUND,
+                            description = ApiResponseConstants.NOT_FOUND_DESCRIPTION,
                             content = @Content(schema = @Schema(implementation =
                                     CommonApiErrorResponse.class))
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
-                            description = "Access denied",
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
+                            description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
                             content = @Content(schema = @Schema(
                                     implementation = CommonApiErrorResponse.class))
                     )
@@ -167,11 +163,11 @@ public class CategoryController {
     }
 
     @Operation(
-            summary = "Delete a category by Id",
-            description = "Delete a category by Id",
+            summary = ApiResponseConstants.CATEGORY_DELETE_DESCRIPTION,
+            description = ApiResponseConstants.CATEGORY_DELETE_DESCRIPTION,
             responses = {
-                    @ApiResponse(responseCode = RESPONSE_CODE_FORBIDDEN,
-                            description = "Access denied",
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
+                            description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
                             content = @Content(schema = @Schema(
                                     implementation = CommonApiErrorResponse.class))
                     )

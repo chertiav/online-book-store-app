@@ -36,7 +36,6 @@ public class CreateBookRequestDto {
 
     private String description;
     private String coverImage;
-    @NotNull(message = "Categories cannot be null")
     @NotEmpty(message = "Categories cannot be empty")
     private List<Long> categories;
 }
