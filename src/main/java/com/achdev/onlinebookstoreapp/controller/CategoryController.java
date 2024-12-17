@@ -1,11 +1,11 @@
 package com.achdev.onlinebookstoreapp.controller;
 
-import com.achdev.onlinebookstoreapp.dto.book.BookDto;
-import com.achdev.onlinebookstoreapp.dto.book.BookSearchParameters;
-import com.achdev.onlinebookstoreapp.dto.book.CreateBookRequestDto;
+import com.achdev.onlinebookstoreapp.dto.book.BookDtoWithoutCategoryIds;
+import com.achdev.onlinebookstoreapp.dto.category.CategoryDto;
+import com.achdev.onlinebookstoreapp.dto.category.CreateCategoryRequestDto;
 import com.achdev.onlinebookstoreapp.dto.errors.CommonApiErrorResponse;
 import com.achdev.onlinebookstoreapp.dto.page.PageResponse;
-import com.achdev.onlinebookstoreapp.service.BookService;
+import com.achdev.onlinebookstoreapp.service.CategoryService;
 import com.achdev.onlinebookstoreapp.util.ApiResponseConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -28,20 +28,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Book management", description = "Endpoints for managing books")
+@Tag(name = "Categories management", description = "Endpoints for managing categories")
 @RestController
-@RequestMapping("/books")
+@RequestMapping("/categories")
 @RequiredArgsConstructor
-public class BookController {
-    private final BookService bookService;
+public class CategoryController {
+    private final CategoryService categoryService;
 
     @Operation(
-            summary = "Get all books",
-            description = "Retrieve a paginated list of all books",
+            summary = "Get all categories",
+            description = "Retrieve a paginated list of all categories",
             responses = {
                     @ApiResponse(
                             responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
-                            description = "Successfully retrieved list of books"
+                            description = "Successfully retrieved list of categories"
                     ),
                     @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
                             description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
@@ -52,18 +52,43 @@ public class BookController {
     )
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping
-    public PageResponse<BookDto> getAll(Pageable pageable) {
-        Page<BookDto> page = bookService.findAll(pageable);
+    public PageResponse<CategoryDto> getAll(Pageable pageable) {
+        Page<CategoryDto> page = categoryService.findAll(pageable);
         return PageResponse.of(page);
     }
 
     @Operation(
-            summary = "Get book by ID",
-            description = "Retrieve a book by ID",
+            summary = "Get books by category",
+            description = "Retrieve a paginated list of books by category",
             responses = {
                     @ApiResponse(
                             responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
-                            description = "Successfully retrieved book information"
+                            description = "Successfully retrieved list of books by category"
+                    ),
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
+                            description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
+                            content = @Content(schema = @Schema(
+                                    implementation = CommonApiErrorResponse.class))
+                    )
+            }
+    )
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping("/{id}/books")
+    public PageResponse<BookDtoWithoutCategoryIds> getBooksByCategoryId(
+            @PathVariable Long id,
+            Pageable pageable) {
+        Page<BookDtoWithoutCategoryIds> page = categoryService
+                .findAllBooksByCategoryId(id, pageable);
+        return PageResponse.of(page);
+    }
+
+    @Operation(
+            summary = "Get category by ID",
+            description = "Retrieve a category by ID",
+            responses = {
+                    @ApiResponse(
+                            responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
+                            description = "Successfully retrieved category information"
                     ),
                     @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_NOT_FOUND,
                             description = ApiResponseConstants.NOT_FOUND_DESCRIPTION,
@@ -79,40 +104,17 @@ public class BookController {
     )
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/{id}")
-    public BookDto getBookById(@PathVariable Long id) {
-        return bookService.findById(id);
+    public CategoryDto getCategoryById(@PathVariable Long id) {
+        return categoryService.findById(id);
     }
 
     @Operation(
-            summary = "Search books by parameters",
-            description = "Retrieve a paginated list of all searched books by parameters",
-            responses = {
-                    @ApiResponse(
-                            responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
-                            description = "Successfully retrieved a paginated list of books"
-                    ),
-                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
-                            description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
-                            content = @Content(schema = @Schema(
-                                    implementation = CommonApiErrorResponse.class))
-                    )
-            }
-    )
-    @PreAuthorize("hasRole('ROLE_USER')")
-    @GetMapping("/search")
-    public PageResponse<BookDto> searchBooks(BookSearchParameters searchParameters,
-                                             Pageable pageable) {
-        Page<BookDto> page = bookService.search(searchParameters, pageable);
-        return PageResponse.of(page);
-    }
-
-    @Operation(
-            summary = ApiResponseConstants.BOOK_CREATE_DESCRIPTION,
-            description = ApiResponseConstants.BOOK_CREATE_DESCRIPTION,
+            summary = ApiResponseConstants.CATEGORY_CREATE_DESCRIPTION,
+            description = ApiResponseConstants.CATEGORY_CREATE_DESCRIPTION,
             responses = {
                     @ApiResponse(
                             responseCode = ApiResponseConstants.RESPONSE_CODE_CREATED,
-                            description = "Successfully created a new book"
+                            description = "Successfully created a new category"
                     ),
                     @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_BAD_REQUEST,
                             description = ApiResponseConstants.INVALID_REQUEST_DESCRIPTION,
@@ -129,17 +131,17 @@ public class BookController {
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
-    public BookDto createBook(@RequestBody @Valid CreateBookRequestDto requestDto) {
-        return bookService.save(requestDto);
+    public CategoryDto createCategory(@RequestBody @Valid CreateCategoryRequestDto requestDto) {
+        return categoryService.save(requestDto);
     }
 
     @Operation(
-            summary = ApiResponseConstants.BOOK_UPDATE_DESCRIPTION,
-            description = ApiResponseConstants.BOOK_UPDATE_DESCRIPTION,
+            summary = ApiResponseConstants.CATEGORY_UPDATE_DESCRIPTION,
+            description = ApiResponseConstants.CATEGORY_UPDATE_DESCRIPTION,
             responses = {
                     @ApiResponse(
                             responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
-                            description = "Successfully updated book information"
+                            description = "Successfully updated category information"
                     ),
                     @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_NOT_FOUND,
                             description = ApiResponseConstants.NOT_FOUND_DESCRIPTION,
@@ -155,14 +157,14 @@ public class BookController {
     )
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
-    public BookDto updateBook(@PathVariable Long id,
-                              @RequestBody @Valid CreateBookRequestDto requestDto) {
-        return bookService.updateById(id, requestDto);
+    public CategoryDto updateCategory(@PathVariable Long id,
+                                      @RequestBody @Valid CreateCategoryRequestDto requestDto) {
+        return categoryService.updateById(id, requestDto);
     }
 
     @Operation(
-            summary = ApiResponseConstants.BOOK_DELETE_DESCRIPTION,
-            description = ApiResponseConstants.BOOK_DELETE_DESCRIPTION,
+            summary = ApiResponseConstants.CATEGORY_DELETE_DESCRIPTION,
+            description = ApiResponseConstants.CATEGORY_DELETE_DESCRIPTION,
             responses = {
                     @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
                             description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
@@ -174,7 +176,7 @@ public class BookController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
-    public void deleteBook(@PathVariable Long id) {
-        bookService.deleteById(id);
+    public void deleteCategory(@PathVariable Long id) {
+        categoryService.deleteById(id);
     }
 }

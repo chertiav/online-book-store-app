@@ -1,6 +1,6 @@
 package com.achdev.onlinebookstoreapp.controller;
 
-import com.achdev.onlinebookstoreapp.dto.errors.BookApiErrorResponse;
+import com.achdev.onlinebookstoreapp.dto.errors.CommonApiErrorResponse;
 import com.achdev.onlinebookstoreapp.dto.user.UserDto;
 import com.achdev.onlinebookstoreapp.dto.user.UserLoginRequestDto;
 import com.achdev.onlinebookstoreapp.dto.user.UserLoginResponseDto;
@@ -8,6 +8,7 @@ import com.achdev.onlinebookstoreapp.dto.user.UserRegistrationRequestDto;
 import com.achdev.onlinebookstoreapp.exception.RegistrationException;
 import com.achdev.onlinebookstoreapp.security.AuthenticationService;
 import com.achdev.onlinebookstoreapp.service.UserService;
+import com.achdev.onlinebookstoreapp.util.ApiResponseConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -25,26 +26,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    private static final String RESPONSE_CODE_OK = "200";
-    private static final String RESPONSE_CODE_CREATED = "201";
-    private static final String RESPONSE_CODE_BAD_REQUEST = "400";
-    private static final String RESPONSE_CODE_UNAUTHORIZED = "401";
-    private static final String RESPONSE_CODE_NOT_FOUND = "404";
     private final UserService userService;
     private final AuthenticationService authenticationService;
 
     @Operation(
-            summary = "Registration a new user",
-            description = "Registration a new user",
+            summary = ApiResponseConstants.USER_REGISTRATION_DESCRIPTION,
+            description = ApiResponseConstants.USER_REGISTRATION_DESCRIPTION,
             responses = {
                     @ApiResponse(
-                            responseCode = RESPONSE_CODE_CREATED,
+                            responseCode = ApiResponseConstants.RESPONSE_CODE_CREATED,
                             description = "Successfully registration a new user"
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_BAD_REQUEST,
-                            description = "Invalid request",
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_BAD_REQUEST,
+                            description = ApiResponseConstants.INVALID_REQUEST_DESCRIPTION,
                             content = @Content(schema = @Schema(
-                                    implementation = BookApiErrorResponse.class))
+                                    implementation = CommonApiErrorResponse.class))
                     )
             }
     )
@@ -56,25 +52,25 @@ public class AuthController {
     }
 
     @Operation(
-            summary = "User login",
-            description = "User login",
+            summary = ApiResponseConstants.USER_LOGIN_DESCRIPTION,
+            description = ApiResponseConstants.USER_LOGIN_DESCRIPTION,
             responses = {
                     @ApiResponse(
-                            responseCode = RESPONSE_CODE_OK,
+                            responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
                             description = "Successful user login"
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_BAD_REQUEST,
-                            description = "Invalid request",
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_BAD_REQUEST,
+                            description = ApiResponseConstants.INVALID_REQUEST_DESCRIPTION,
                             content = @Content(schema = @Schema(
-                                    implementation = BookApiErrorResponse.class))
+                                    implementation = CommonApiErrorResponse.class))
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_NOT_FOUND,
-                            description = "Not found",
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_NOT_FOUND,
+                            description = ApiResponseConstants.NOT_FOUND_DESCRIPTION,
                             content = @Content(schema = @Schema(
-                                    implementation = BookApiErrorResponse.class))
+                                    implementation = CommonApiErrorResponse.class))
                     ),
-                    @ApiResponse(responseCode = RESPONSE_CODE_UNAUTHORIZED,
-                            description = "Unauthorized"
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_UNAUTHORIZED,
+                            description = ApiResponseConstants.UNAUTHORIZED_DESCRIPTION
                     )
             }
     )

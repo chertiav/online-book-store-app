@@ -1,6 +1,7 @@
 package com.achdev.onlinebookstoreapp.service.impl;
 
 import com.achdev.onlinebookstoreapp.dto.book.BookDto;
+import com.achdev.onlinebookstoreapp.dto.book.BookDtoWithoutCategoryIds;
 import com.achdev.onlinebookstoreapp.dto.book.BookSearchParameters;
 import com.achdev.onlinebookstoreapp.dto.book.CreateBookRequestDto;
 import com.achdev.onlinebookstoreapp.exception.EntityNotFoundException;
@@ -27,6 +28,12 @@ public class BookServiceImpl implements BookService {
     public Page<BookDto> findAll(Pageable pageable) {
         return bookRepository.findAll(pageable)
                 .map(bookMapper::toDto);
+    }
+
+    @Override
+    public Page<BookDtoWithoutCategoryIds> findAllByCategoryId(Long categoryId, Pageable pageable) {
+        return bookRepository.findAllByCategories(categoryId, pageable)
+                .map(bookMapper::toDtoWithoutCategories);
     }
 
     @Override
