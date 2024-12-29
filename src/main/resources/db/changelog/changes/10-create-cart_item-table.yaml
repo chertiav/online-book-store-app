@@ -1,0 +1,48 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-cart_item-table
+      author: andrey chertykovtsev
+      changes:
+        - createTable:
+            tableName: cart_items
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: shopping_carts_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: book_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quantity
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_deleted
+                  type: BIT(1)
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseColumnNames: book_id
+            baseTableName: cart_items
+            constraintName: FK_CART_ITEMS_ON_BOOK
+            referencedColumnNames: id
+            referencedTableName: books
+        - addForeignKeyConstraint:
+            baseColumnNames: shopping_carts_id
+            baseTableName: cart_items
+            constraintName: FK_CART_ITEMS_ON_SHOPPING_CART
+            referencedColumnNames: user_id
+            referencedTableName: shopping_carts
