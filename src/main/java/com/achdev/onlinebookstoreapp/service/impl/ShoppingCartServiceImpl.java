@@ -1,5 +1,6 @@
 package com.achdev.onlinebookstoreapp.service.impl;
 
+import com.achdev.onlinebookstoreapp.dto.book.BookDto;
 import com.achdev.onlinebookstoreapp.dto.cart.item.CartItemRequestDto;
 import com.achdev.onlinebookstoreapp.dto.shopping.cart.ShoppingCartDto;
 import com.achdev.onlinebookstoreapp.exception.EntityNotFoundException;
@@ -11,9 +12,9 @@ import com.achdev.onlinebookstoreapp.model.User;
 import com.achdev.onlinebookstoreapp.repository.cart.item.CartItemRepository;
 import com.achdev.onlinebookstoreapp.repository.shopping.cart.ShoppingCartRepository;
 import com.achdev.onlinebookstoreapp.service.BookService;
+import com.achdev.onlinebookstoreapp.service.CartItemService;
 import com.achdev.onlinebookstoreapp.service.ShoppingCartService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     private final ShoppingCartMapper shoppingCartMapper;
     private final ShoppingCartRepository shoppingCartsRepository;
     private final CartItemRepository cartItemRepository;
+    private final CartItemService cartItemService;
     private final CartItemMapper cartItemMapper;
     private final BookService bookService;
 
@@ -39,29 +41,22 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     @Transactional
     @Override
-    public void addCartItem(CartItemRequestDto requestDto, UserDetails userDetails) {
-        if (bookService.findById(requestDto.getBookId()) == null) {
-            throw new EntityNotFoundException("Can't find book by id: " + requestDto.getBookId());
-        }
-        ShoppingCart shoppingCart = getShoppingCartByUserEmail(userDetails.getUsername());
-        CartItem cartItem = cartItemMapper.toModel(requestDto, shoppingCart);
-        if (getCartItemByBookId(shoppingCart, cartItem) == null) {
+    public ShoppingCartDto addCartItem(CartItemRequestDto requestDto, String userEmail) {
+        BookDto bookDto = bookService.findById(requestDto.getBookId());
+        ShoppingCart shoppingCart = getShoppingCartByUserEmail(userEmail);
+        if (cartItemService.findCartItemByBookIdAndShoppingCartId(
+                bookDto.getId(), shoppingCart.getId()).isEmpty()
+        ) {
+            CartItem cartItem = cartItemMapper.toModel(
+                    bookDto, requestDto.getQuantity(), shoppingCart);
             shoppingCart.getCartItems().add(cartItemRepository.save(cartItem));
-            shoppingCartsRepository.save(shoppingCart);
         }
+        return shoppingCartMapper.toDto(shoppingCartsRepository.save(shoppingCart));
     }
 
     private ShoppingCart getShoppingCartByUserEmail(String email) {
-        return shoppingCartsRepository.findByUser_Email(email)
+        return shoppingCartsRepository.findByUserEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Can't find user's shopping cart by email: " + email));
-    }
-
-    private CartItem getCartItemByBookId(ShoppingCart shoppingCart, CartItem cartItem) {
-        return shoppingCart.getCartItems().stream()
-                .filter(item -> item.getBook().getId()
-                        .equals(cartItem.getBook().getId()))
-                .findFirst()
-                .orElse(null);
     }
 }

@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Cart item management", description = "Endpoints for managing cart items")
-@PreAuthorize("hasRole('ROLE_USER')")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/cart/cart-items")
@@ -49,6 +48,7 @@ public class CartItemController {
                     )
             }
     )
+    @PreAuthorize("hasRole('ROLE_USER')")
     @PutMapping("/{cartItemId}")
     public void updateCartItem(
             @PathVariable Long cartItemId,
@@ -67,6 +67,7 @@ public class CartItemController {
                     )
             }
     )
+    @PreAuthorize("hasRole('ROLE_USER')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{cartItemId}")
     public void deleteCartItem(@PathVariable Long cartItemId) {

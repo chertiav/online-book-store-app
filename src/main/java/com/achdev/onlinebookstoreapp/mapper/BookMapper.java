@@ -38,10 +38,10 @@ public interface BookMapper {
     @Mapping(source = "categories", target = "categories", qualifiedBy = CategoryMapping.class)
     void updateBookFromDto(CreateBookRequestDto requestDto, @MappingTarget Book book);
 
-    @Named("bookById")
-    default Book bookById(Long id) {
-        return Optional.ofNullable(id)
-                .map(Book::new)
-                .orElse(null);
+    @Named("bookByBookDto")
+    default Book bookByBookDto(BookDto bookDto) {
+        return Optional.ofNullable(bookDto)
+                .map(dto -> new Book(bookDto.getId(), bookDto.getTitle()))
+                .orElse(new Book());
     }
 }

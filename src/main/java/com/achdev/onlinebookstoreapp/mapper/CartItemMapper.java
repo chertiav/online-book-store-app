@@ -1,7 +1,7 @@
 package com.achdev.onlinebookstoreapp.mapper;
 
 import com.achdev.onlinebookstoreapp.config.MapperConfig;
-import com.achdev.onlinebookstoreapp.dto.cart.item.CartItemRequestDto;
+import com.achdev.onlinebookstoreapp.dto.book.BookDto;
 import com.achdev.onlinebookstoreapp.dto.cart.item.CartItemResponseDto;
 import com.achdev.onlinebookstoreapp.dto.cart.item.UpdateCartItemRequestDto;
 import com.achdev.onlinebookstoreapp.model.CartItem;
@@ -15,10 +15,11 @@ import org.mapstruct.Named;
 
 @Mapper(config = MapperConfig.class, uses = BookMapper.class)
 public interface CartItemMapper {
-    @Mapping(target = "book", source = "requestDto.bookId", qualifiedByName = "bookById")
+    @Mapping(target = "book", source = "bookDto", qualifiedByName = "bookByBookDto")
     @Mapping(target = "shoppingCart", source = "shoppingCart")
+    @Mapping(target = "quantity", source = "quantity")
     @Mapping(target = "id", ignore = true)
-    CartItem toModel(CartItemRequestDto requestDto, ShoppingCart shoppingCart);
+    CartItem toModel(BookDto bookDto, int quantity, ShoppingCart shoppingCart);
 
     @Mapping(target = "bookId", source = "book.id")
     @Mapping(target = "bookTitle", source = "book.title")

@@ -14,8 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Shopping cart management", description = "Endpoints for managing shopping carts")
-@PreAuthorize("hasRole('ROLE_USER')")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/cart")
@@ -46,11 +44,10 @@ public class ShoppingCartController {
                     )
             }
     )
+    @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping
-    public ShoppingCartDto getShoppingCart(
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
-        return shoppingCartService.findShoppingCartByUserEmail(userDetails.getUsername());
+    public ShoppingCartDto getShoppingCart(Authentication authentication) {
+        return shoppingCartService.findShoppingCartByUserEmail(authentication.getName());
     }
 
     @Operation(
@@ -61,6 +58,11 @@ public class ShoppingCartController {
                             responseCode = ApiResponseConstants.RESPONSE_CODE_CREATED,
                             description = "Successfully added book to user's shopping cart"
                     ),
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_NOT_FOUND,
+                            description = ApiResponseConstants.NOT_FOUND_DESCRIPTION,
+                            content = @Content(schema = @Schema(
+                                    implementation = CommonApiErrorResponse.class))
+                    ),
                     @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
                             description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
                             content = @Content(schema = @Schema(
@@ -69,12 +71,13 @@ public class ShoppingCartController {
             }
     )
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping
-    public void addCartItem(
-            @AuthenticationPrincipal UserDetails userDetails,
+    public ShoppingCartDto addCartItem(
+            Authentication authentication,
             @RequestBody @Valid CartItemRequestDto requestDto
     ) {
-        shoppingCartService.addCartItem(requestDto, userDetails);
+        return shoppingCartService.addCartItem(requestDto, authentication.getName());
     }
 
 }

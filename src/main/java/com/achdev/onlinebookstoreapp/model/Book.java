@@ -52,7 +52,8 @@ public class Book {
     )
     private Set<Category> categories;
 
-    public Book(Long id) {
+    public Book(Long id, String title) {
         this.id = id;
+        this.title = title;
     }
 }
