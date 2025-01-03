@@ -19,4 +19,6 @@ public class ApiResponseConstants {
     public static final String BOOK_DELETE_DESCRIPTION = "Delete a book by Id";
     public static final String USER_REGISTRATION_DESCRIPTION = "Registration a new user";
     public static final String USER_LOGIN_DESCRIPTION = "User login";
+    public static final String CART_ITEM_UPDATE_DESCRIPTION = "Update a cart item by Id";
+    public static final String CART_ITEM_DELETE_DESCRIPTION = "Delete a cart item by Id";
 }

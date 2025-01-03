@@ -8,12 +8,14 @@ import com.achdev.onlinebookstoreapp.mapper.category.CategoryListToSetMapper;
 import com.achdev.onlinebookstoreapp.mapper.category.CategoryMapping;
 import com.achdev.onlinebookstoreapp.model.Book;
 import com.achdev.onlinebookstoreapp.model.Category;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
 
 @Mapper(config = MapperConfig.class, uses = CategoryListToSetMapper.class)
 public interface BookMapper {
@@ -35,4 +37,11 @@ public interface BookMapper {
 
     @Mapping(source = "categories", target = "categories", qualifiedBy = CategoryMapping.class)
     void updateBookFromDto(CreateBookRequestDto requestDto, @MappingTarget Book book);
+
+    @Named("bookByBookDto")
+    default Book bookByBookDto(BookDto bookDto) {
+        return Optional.ofNullable(bookDto)
+                .map(dto -> new Book(bookDto.getId(), bookDto.getTitle()))
+                .orElse(new Book());
+    }
 }

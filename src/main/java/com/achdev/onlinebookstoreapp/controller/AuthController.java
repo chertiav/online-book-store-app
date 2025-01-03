@@ -11,6 +11,7 @@ import com.achdev.onlinebookstoreapp.service.UserService;
 import com.achdev.onlinebookstoreapp.util.ApiResponseConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
@@ -42,7 +43,29 @@ public class AuthController {
                             content = @Content(schema = @Schema(
                                     implementation = CommonApiErrorResponse.class))
                     )
-            }
+            },
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "User registration data",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserRegistrationRequestDto.class),
+                            examples = @ExampleObject(
+                                    name = "Example User Registration",
+                                    summary = "Example of a valid registration request",
+                                    value = """
+                                            {
+                                              "email": "example@example.com",
+                                              "password": "strongPassword123*",
+                                              "repeatPassword": "strongPassword123*",
+                                              "firstName": "John",
+                                              "lastName": "Doe",
+                                              "shippingAddress": "123 Example Street"
+                                            }
+                                            """
+                            )
+                    )
+            )
     )
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/registration")
@@ -72,7 +95,25 @@ public class AuthController {
                     @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_UNAUTHORIZED,
                             description = ApiResponseConstants.UNAUTHORIZED_DESCRIPTION
                     )
-            }
+            },
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "User login data",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserLoginRequestDto.class),
+                            examples = @ExampleObject(
+                                    name = "Example User logging",
+                                    summary = "Example of a valid logging request",
+                                    value = """
+                                            {
+                                              "email": "example@example.com",
+                                              "password": "strongPassword123*"
+                                            }
+                                            """
+                            )
+                    )
+            )
     )
     @PostMapping("/login")
     public UserLoginResponseDto register(@RequestBody @Valid UserLoginRequestDto requestDto) {
