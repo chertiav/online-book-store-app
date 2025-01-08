@@ -1,5 +1,6 @@
 package com.achdev.onlinebookstoreapp.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -32,7 +33,7 @@ public class ShoppingCart {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinTable(name = "shopping_carts_cart_items",
             joinColumns = @JoinColumn(name = "shopping_carts_id"),
             inverseJoinColumns = @JoinColumn(name = "cart_items_id"))

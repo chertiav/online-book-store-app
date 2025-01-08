@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -52,7 +53,7 @@ public class BookController {
     )
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping
-    public PageResponse<BookDto> getAll(Pageable pageable) {
+    public PageResponse<BookDto> getAll(@ParameterObject Pageable pageable) {
         Page<BookDto> page = bookService.findAll(pageable);
         return PageResponse.of(page);
     }
@@ -101,7 +102,7 @@ public class BookController {
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/search")
     public PageResponse<BookDto> searchBooks(BookSearchParameters searchParameters,
-                                             Pageable pageable) {
+                                             @ParameterObject Pageable pageable) {
         Page<BookDto> page = bookService.search(searchParameters, pageable);
         return PageResponse.of(page);
     }

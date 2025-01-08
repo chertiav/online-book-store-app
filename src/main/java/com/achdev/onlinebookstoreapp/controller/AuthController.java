@@ -102,16 +102,28 @@ public class AuthController {
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = UserLoginRequestDto.class),
-                            examples = @ExampleObject(
-                                    name = "Example User logging",
-                                    summary = "Example of a valid logging request",
-                                    value = """
-                                            {
-                                              "email": "example@example.com",
-                                              "password": "strongPassword123*"
-                                            }
-                                            """
-                            )
+                            examples = {
+                                    @ExampleObject(
+                                            name = "Example User logging",
+                                            summary = "Example of a valid User logging request",
+                                            value = """
+                                                    {
+                                                      "email": "example@example.com",
+                                                      "password": "strongPassword123*"
+                                                    }
+                                                    """
+                                    ),
+                                    @ExampleObject(
+                                            name = "Example Admin logging",
+                                            summary = "Example of a valid Admin logging request",
+                                            value = """
+                                                    {
+                                                      "email": "admin@example.com",
+                                                      "password": "12345678"
+                                                    }
+                                                    """
+                                    )
+                            }
                     )
             )
     )

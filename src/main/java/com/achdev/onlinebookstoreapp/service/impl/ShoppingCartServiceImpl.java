@@ -54,9 +54,16 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         return shoppingCartMapper.toDto(shoppingCartsRepository.save(shoppingCart));
     }
 
-    private ShoppingCart getShoppingCartByUserEmail(String email) {
+    @Override
+    public ShoppingCart getShoppingCartByUserEmail(String email) {
         return shoppingCartsRepository.findByUserEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Can't find user's shopping cart by email: " + email));
+    }
+
+    @Override
+    public void clearShoppingCart(ShoppingCart shoppingCart) {
+        shoppingCart.getCartItems().clear();
+        shoppingCartsRepository.save(shoppingCart);
     }
 }
