@@ -2,6 +2,7 @@ package com.achdev.onlinebookstoreapp.service.impl;
 
 import com.achdev.onlinebookstoreapp.dto.book.BookDto;
 import com.achdev.onlinebookstoreapp.dto.cart.item.CartItemRequestDto;
+import com.achdev.onlinebookstoreapp.dto.cart.item.UpdateCartItemRequestDto;
 import com.achdev.onlinebookstoreapp.dto.shopping.cart.ShoppingCartDto;
 import com.achdev.onlinebookstoreapp.exception.EntityNotFoundException;
 import com.achdev.onlinebookstoreapp.mapper.CartItemMapper;
@@ -12,7 +13,6 @@ import com.achdev.onlinebookstoreapp.model.User;
 import com.achdev.onlinebookstoreapp.repository.cart.item.CartItemRepository;
 import com.achdev.onlinebookstoreapp.repository.shopping.cart.ShoppingCartRepository;
 import com.achdev.onlinebookstoreapp.service.BookService;
-import com.achdev.onlinebookstoreapp.service.CartItemService;
 import com.achdev.onlinebookstoreapp.service.ShoppingCartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,6 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     private final ShoppingCartMapper shoppingCartMapper;
     private final ShoppingCartRepository shoppingCartsRepository;
     private final CartItemRepository cartItemRepository;
-    private final CartItemService cartItemService;
     private final CartItemMapper cartItemMapper;
     private final BookService bookService;
 
@@ -44,7 +43,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     public ShoppingCartDto addCartItem(CartItemRequestDto requestDto, String userEmail) {
         BookDto bookDto = bookService.findById(requestDto.getBookId());
         ShoppingCart shoppingCart = getShoppingCartByUserEmail(userEmail);
-        if (cartItemService.findCartItemByBookIdAndShoppingCartId(
+        if (cartItemRepository.findCartItemByBookIdAndShoppingCartId(
                 bookDto.getId(), shoppingCart.getId()).isEmpty()
         ) {
             CartItem cartItem = cartItemMapper.toModel(
@@ -65,5 +64,19 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     public void clearShoppingCart(ShoppingCart shoppingCart) {
         shoppingCart.getCartItems().clear();
         shoppingCartsRepository.save(shoppingCart);
+    }
+
+    @Override
+    public void updateCartItem(Long cartItemId, UpdateCartItemRequestDto requestDto) {
+        CartItem cartItem = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Can't find cart item by id: " + cartItemId));
+        cartItemMapper.updateCartItemQuantity(requestDto, cartItem);
+        cartItemRepository.save(cartItem);
+    }
+
+    @Override
+    public void deleteCartItem(Long cartItemId) {
+        cartItemRepository.deleteById(cartItemId);
     }
 }

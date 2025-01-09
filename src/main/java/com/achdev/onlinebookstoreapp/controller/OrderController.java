@@ -4,6 +4,7 @@ import com.achdev.onlinebookstoreapp.dto.errors.CommonApiErrorResponse;
 import com.achdev.onlinebookstoreapp.dto.order.OrderDto;
 import com.achdev.onlinebookstoreapp.dto.order.OrderRequestDto;
 import com.achdev.onlinebookstoreapp.dto.order.OrderStatusRequestDto;
+import com.achdev.onlinebookstoreapp.dto.order.item.OrderItemDto;
 import com.achdev.onlinebookstoreapp.dto.page.PageResponse;
 import com.achdev.onlinebookstoreapp.service.OrderService;
 import com.achdev.onlinebookstoreapp.util.ApiResponseConstants;
@@ -118,5 +119,69 @@ public class OrderController {
     public OrderDto updateStatus(@PathVariable Long id,
                                  @RequestBody OrderStatusRequestDto requestDto) {
         return orderService.updateStatusById(id, requestDto);
+    }
+
+    @Operation(
+            summary = "Get all order items for a specific order",
+            description = "Retrieving a paginated list of all order items for a specific order",
+            responses = {
+                    @ApiResponse(
+                            responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
+                            description = "Successfully retrieved list of all order items for "
+                                    + "a specific order"
+                    ),
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_NOT_FOUND,
+                            description = ApiResponseConstants.NOT_FOUND_DESCRIPTION,
+                            content = @Content(schema = @Schema(implementation =
+                                    CommonApiErrorResponse.class))
+                    ),
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
+                            description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
+                            content = @Content(schema = @Schema(
+                                    implementation = CommonApiErrorResponse.class))
+                    )
+            }
+    )
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping("/{orderId}/items")
+    public PageResponse<OrderItemDto> getAllOrderItems(
+            Authentication authentication,
+            @PathVariable Long orderId,
+            @ParameterObject Pageable pageable
+    ) {
+        return PageResponse.of(orderService.findAllOrderItemsByOrderIdAndOrderUserEmail(
+                orderId, authentication.getName(), pageable));
+    }
+
+    @Operation(
+            summary = "Get a specific order item from an order",
+            description = "Retrieving a specific order item from an order",
+            responses = {
+                    @ApiResponse(
+                            responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
+                            description = "Successfully retrieved a specific order item "
+                                    + "from an order"
+                    ),
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_NOT_FOUND,
+                            description = ApiResponseConstants.NOT_FOUND_DESCRIPTION,
+                            content = @Content(schema = @Schema(implementation =
+                                    CommonApiErrorResponse.class))
+                    ),
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
+                            description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
+                            content = @Content(schema = @Schema(
+                                    implementation = CommonApiErrorResponse.class))
+                    )
+            }
+    )
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping("/{orderId}/items/{itemId}")
+    public OrderItemDto getOrderItemById(
+            Authentication authentication,
+            @PathVariable Long orderId,
+            @PathVariable Long itemId
+    ) {
+        return orderService.findOrderItemByIdAndOrderIdAndOrderUserEmail(
+                itemId, orderId, authentication.getName());
     }
 }

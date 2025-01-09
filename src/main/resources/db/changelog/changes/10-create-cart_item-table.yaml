@@ -14,7 +14,7 @@ databaseChangeLog:
                     primaryKey: true
                     nullable: false
               - column:
-                  name: shopping_carts_id
+                  name: shopping_cart_id
                   type: BIGINT
                   constraints:
                     nullable: false
@@ -41,7 +41,7 @@ databaseChangeLog:
             referencedColumnNames: id
             referencedTableName: books
         - addForeignKeyConstraint:
-            baseColumnNames: shopping_carts_id
+            baseColumnNames: shopping_cart_id
             baseTableName: cart_items
             constraintName: FK_CART_ITEMS_ON_SHOPPING_CART
             referencedColumnNames: user_id
