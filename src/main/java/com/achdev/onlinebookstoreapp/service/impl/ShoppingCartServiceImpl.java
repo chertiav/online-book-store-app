@@ -2,6 +2,7 @@ package com.achdev.onlinebookstoreapp.service.impl;
 
 import com.achdev.onlinebookstoreapp.dto.book.BookDto;
 import com.achdev.onlinebookstoreapp.dto.cart.item.CartItemRequestDto;
+import com.achdev.onlinebookstoreapp.dto.cart.item.CartItemResponseDto;
 import com.achdev.onlinebookstoreapp.dto.cart.item.UpdateCartItemRequestDto;
 import com.achdev.onlinebookstoreapp.dto.shopping.cart.ShoppingCartDto;
 import com.achdev.onlinebookstoreapp.exception.EntityNotFoundException;
@@ -67,12 +68,15 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     }
 
     @Override
-    public void updateCartItem(Long cartItemId, UpdateCartItemRequestDto requestDto) {
+    public CartItemResponseDto updateCartItem(
+            Long cartItemId,
+            UpdateCartItemRequestDto requestDto
+    ) {
         CartItem cartItem = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Can't find cart item by id: " + cartItemId));
         cartItemMapper.updateCartItemQuantity(requestDto, cartItem);
-        cartItemRepository.save(cartItem);
+        return cartItemMapper.toDto(cartItemRepository.save(cartItem));
     }
 
     @Override

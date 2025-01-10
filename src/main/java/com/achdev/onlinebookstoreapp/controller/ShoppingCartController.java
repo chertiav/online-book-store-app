@@ -1,6 +1,7 @@
 package com.achdev.onlinebookstoreapp.controller;
 
 import com.achdev.onlinebookstoreapp.dto.cart.item.CartItemRequestDto;
+import com.achdev.onlinebookstoreapp.dto.cart.item.CartItemResponseDto;
 import com.achdev.onlinebookstoreapp.dto.cart.item.UpdateCartItemRequestDto;
 import com.achdev.onlinebookstoreapp.dto.errors.CommonApiErrorResponse;
 import com.achdev.onlinebookstoreapp.dto.shopping.cart.ShoppingCartDto;
@@ -106,10 +107,10 @@ public class ShoppingCartController {
     )
     @PreAuthorize("hasRole('ROLE_USER')")
     @PutMapping("/{cartItemId}")
-    public void updateCartItem(
+    public CartItemResponseDto updateCartItem(
             @PathVariable Long cartItemId,
             @RequestBody @Valid UpdateCartItemRequestDto requestDto) {
-        shoppingCartService.updateCartItem(cartItemId, requestDto);
+        return shoppingCartService.updateCartItem(cartItemId, requestDto);
     }
 
     @Operation(
