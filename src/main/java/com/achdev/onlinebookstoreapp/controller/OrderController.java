@@ -1,11 +1,12 @@
 package com.achdev.onlinebookstoreapp.controller;
 
-import com.achdev.onlinebookstoreapp.dto.book.BookDto;
-import com.achdev.onlinebookstoreapp.dto.book.BookSearchParameters;
-import com.achdev.onlinebookstoreapp.dto.book.CreateBookRequestDto;
 import com.achdev.onlinebookstoreapp.dto.errors.CommonApiErrorResponse;
+import com.achdev.onlinebookstoreapp.dto.order.OrderDto;
+import com.achdev.onlinebookstoreapp.dto.order.OrderRequestDto;
+import com.achdev.onlinebookstoreapp.dto.order.OrderStatusRequestDto;
+import com.achdev.onlinebookstoreapp.dto.order.item.OrderItemDto;
 import com.achdev.onlinebookstoreapp.dto.page.PageResponse;
-import com.achdev.onlinebookstoreapp.service.BookService;
+import com.achdev.onlinebookstoreapp.service.OrderService;
 import com.achdev.onlinebookstoreapp.util.ApiResponseConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,56 +16,33 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Book management", description = "Endpoints for managing books")
+@Tag(name = "Order management", description = "Endpoints for managing orders")
 @RestController
-@RequestMapping("/books")
 @RequiredArgsConstructor
-public class BookController {
-    private final BookService bookService;
+@RequestMapping("/orders")
+public class OrderController {
+    private final OrderService orderService;
 
     @Operation(
-            summary = "Get all books",
-            description = "Retrieve a paginated list of all books",
+            summary = "Placing an order",
+            description = "Create an order",
             responses = {
                     @ApiResponse(
-                            responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
-                            description = "Successfully retrieved list of books"
-                    ),
-                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
-                            description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
-                            content = @Content(schema = @Schema(
-                                    implementation = CommonApiErrorResponse.class))
-                    )
-            }
-    )
-    @PreAuthorize("hasRole('ROLE_USER')")
-    @GetMapping
-    public PageResponse<BookDto> getAll(@ParameterObject Pageable pageable) {
-        Page<BookDto> page = bookService.findAll(pageable);
-        return PageResponse.of(page);
-    }
-
-    @Operation(
-            summary = "Get book by ID",
-            description = "Retrieve a book by ID",
-            responses = {
-                    @ApiResponse(
-                            responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
-                            description = "Successfully retrieved book information"
+                            responseCode = ApiResponseConstants.RESPONSE_CODE_CREATED,
+                            description = "Successfully placed an order"
                     ),
                     @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_NOT_FOUND,
                             description = ApiResponseConstants.NOT_FOUND_DESCRIPTION,
@@ -78,19 +56,23 @@ public class BookController {
                     )
             }
     )
+    @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ROLE_USER')")
-    @GetMapping("/{id}")
-    public BookDto getBookById(@PathVariable Long id) {
-        return bookService.findById(id);
+    @PostMapping
+    public OrderDto placeOrder(
+            Authentication authentication,
+            @RequestBody @Valid OrderRequestDto requestDto
+    ) {
+        return orderService.completeOrder(authentication.getName(), requestDto);
     }
 
     @Operation(
-            summary = "Search books by parameters",
-            description = "Retrieve a paginated list of all searched books by parameters",
+            summary = "Get all user's orders",
+            description = "Retrieving a paginated list of all user's order history",
             responses = {
                     @ApiResponse(
                             responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
-                            description = "Successfully retrieved a paginated list of books"
+                            description = "Successfully retrieved list of user's order history"
                     ),
                     @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
                             description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
@@ -100,26 +82,31 @@ public class BookController {
             }
     )
     @PreAuthorize("hasRole('ROLE_USER')")
-    @GetMapping("/search")
-    public PageResponse<BookDto> searchBooks(BookSearchParameters searchParameters,
-                                             @ParameterObject Pageable pageable) {
-        Page<BookDto> page = bookService.search(searchParameters, pageable);
-        return PageResponse.of(page);
+    @GetMapping
+    public PageResponse<OrderDto> getAll(Authentication authentication,
+                                         @ParameterObject Pageable pageable) {
+        return PageResponse.of(orderService.findAllOrdersByUserEmail(
+                authentication.getName(), pageable));
     }
 
     @Operation(
-            summary = ApiResponseConstants.BOOK_CREATE_DESCRIPTION,
-            description = ApiResponseConstants.BOOK_CREATE_DESCRIPTION,
+            summary = "Update order's status by ID",
+            description = "Updating order status by ID",
             responses = {
                     @ApiResponse(
-                            responseCode = ApiResponseConstants.RESPONSE_CODE_CREATED,
-                            description = "Successfully created a new book"
+                            responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
+                            description = "Successfully updated order status"
                     ),
                     @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_BAD_REQUEST,
                             description = ApiResponseConstants.INVALID_REQUEST_DESCRIPTION,
                             content = @Content(schema = @Schema(
                                     implementation = CommonApiErrorResponse.class))
                     ),
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_NOT_FOUND,
+                            description = ApiResponseConstants.NOT_FOUND_DESCRIPTION,
+                            content = @Content(schema = @Schema(
+                                    implementation = CommonApiErrorResponse.class))
+                    ),
                     @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
                             description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
                             content = @Content(schema = @Schema(
@@ -127,20 +114,21 @@ public class BookController {
                     )
             }
     )
-    @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PostMapping
-    public BookDto createBook(@RequestBody @Valid CreateBookRequestDto requestDto) {
-        return bookService.save(requestDto);
+    @PatchMapping("/{id}")
+    public OrderDto updateStatus(@PathVariable Long id,
+                                 @RequestBody OrderStatusRequestDto requestDto) {
+        return orderService.updateStatusById(id, requestDto);
     }
 
     @Operation(
-            summary = ApiResponseConstants.BOOK_UPDATE_DESCRIPTION,
-            description = ApiResponseConstants.BOOK_UPDATE_DESCRIPTION,
+            summary = "Get all order items for a specific order",
+            description = "Retrieving a paginated list of all order items for a specific order",
             responses = {
                     @ApiResponse(
                             responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
-                            description = "Successfully updated book information"
+                            description = "Successfully retrieved list of all order items for "
+                                    + "a specific order"
                     ),
                     @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_NOT_FOUND,
                             description = ApiResponseConstants.NOT_FOUND_DESCRIPTION,
@@ -154,17 +142,31 @@ public class BookController {
                     )
             }
     )
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PutMapping("/{id}")
-    public BookDto updateBook(@PathVariable Long id,
-                              @RequestBody @Valid CreateBookRequestDto requestDto) {
-        return bookService.updateById(id, requestDto);
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping("/{orderId}/items")
+    public PageResponse<OrderItemDto> getAllOrderItems(
+            Authentication authentication,
+            @PathVariable Long orderId,
+            @ParameterObject Pageable pageable
+    ) {
+        return PageResponse.of(orderService.findAllOrderItemsByOrderIdAndOrderUserEmail(
+                orderId, authentication.getName(), pageable));
     }
 
     @Operation(
-            summary = ApiResponseConstants.BOOK_DELETE_DESCRIPTION,
-            description = ApiResponseConstants.BOOK_DELETE_DESCRIPTION,
+            summary = "Get a specific order item from an order",
+            description = "Retrieving a specific order item from an order",
             responses = {
+                    @ApiResponse(
+                            responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
+                            description = "Successfully retrieved a specific order item "
+                                    + "from an order"
+                    ),
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_NOT_FOUND,
+                            description = ApiResponseConstants.NOT_FOUND_DESCRIPTION,
+                            content = @Content(schema = @Schema(implementation =
+                                    CommonApiErrorResponse.class))
+                    ),
                     @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
                             description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
                             content = @Content(schema = @Schema(
@@ -172,10 +174,14 @@ public class BookController {
                     )
             }
     )
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @DeleteMapping("/{id}")
-    public void deleteBook(@PathVariable Long id) {
-        bookService.deleteById(id);
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping("/{orderId}/items/{itemId}")
+    public OrderItemDto getOrderItemById(
+            Authentication authentication,
+            @PathVariable Long orderId,
+            @PathVariable Long itemId
+    ) {
+        return orderService.findOrderItemByIdAndOrderIdAndOrderUserEmail(
+                itemId, orderId, authentication.getName());
     }
 }

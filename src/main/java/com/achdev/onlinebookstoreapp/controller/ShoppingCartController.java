@@ -1,6 +1,8 @@
 package com.achdev.onlinebookstoreapp.controller;
 
 import com.achdev.onlinebookstoreapp.dto.cart.item.CartItemRequestDto;
+import com.achdev.onlinebookstoreapp.dto.cart.item.CartItemResponseDto;
+import com.achdev.onlinebookstoreapp.dto.cart.item.UpdateCartItemRequestDto;
 import com.achdev.onlinebookstoreapp.dto.errors.CommonApiErrorResponse;
 import com.achdev.onlinebookstoreapp.dto.shopping.cart.ShoppingCartDto;
 import com.achdev.onlinebookstoreapp.service.ShoppingCartService;
@@ -15,8 +17,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -80,4 +85,49 @@ public class ShoppingCartController {
         return shoppingCartService.addCartItem(requestDto, authentication.getName());
     }
 
+    @Operation(
+            summary = ApiResponseConstants.CART_ITEM_UPDATE_DESCRIPTION,
+            description = ApiResponseConstants.CART_ITEM_UPDATE_DESCRIPTION,
+            responses = {
+                    @ApiResponse(
+                            responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
+                            description = "Successfully updated cart item's information"
+                    ),
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_NOT_FOUND,
+                            description = ApiResponseConstants.NOT_FOUND_DESCRIPTION,
+                            content = @Content(schema = @Schema(implementation =
+                                    CommonApiErrorResponse.class))
+                    ),
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
+                            description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
+                            content = @Content(schema = @Schema(
+                                    implementation = CommonApiErrorResponse.class))
+                    )
+            }
+    )
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @PutMapping("/{cartItemId}")
+    public CartItemResponseDto updateCartItem(
+            @PathVariable Long cartItemId,
+            @RequestBody @Valid UpdateCartItemRequestDto requestDto) {
+        return shoppingCartService.updateCartItem(cartItemId, requestDto);
+    }
+
+    @Operation(
+            summary = ApiResponseConstants.CART_ITEM_DELETE_DESCRIPTION,
+            description = ApiResponseConstants.CART_ITEM_DELETE_DESCRIPTION,
+            responses = {
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_FORBIDDEN,
+                            description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
+                            content = @Content(schema = @Schema(
+                                    implementation = CommonApiErrorResponse.class))
+                    )
+            }
+    )
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{cartItemId}")
+    public void deleteCartItem(@PathVariable Long cartItemId) {
+        shoppingCartService.deleteCartItem(cartItemId);
+    }
 }
