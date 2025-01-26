@@ -25,6 +25,8 @@ import org.hibernate.annotations.SQLRestriction;
 @SQLRestriction("is_deleted = false")
 @NoArgsConstructor
 @Entity
+@EqualsAndHashCode
+@ToString
 @Table(name = "books")
 public class Book {
     @Id

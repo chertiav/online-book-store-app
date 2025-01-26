@@ -96,7 +96,7 @@ public class BookController {
                             description = ApiResponseConstants.FORBIDDEN_DESCRIPTION,
                             content = @Content(schema = @Schema(
                                     implementation = CommonApiErrorResponse.class))
-                    )
+                    ),
             }
     )
     @PreAuthorize("hasRole('ROLE_USER')")
@@ -141,6 +141,11 @@ public class BookController {
                     @ApiResponse(
                             responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
                             description = "Successfully updated book information"
+                    ),
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_BAD_REQUEST,
+                            description = ApiResponseConstants.INVALID_REQUEST_DESCRIPTION,
+                            content = @Content(schema = @Schema(
+                                    implementation = CommonApiErrorResponse.class))
                     ),
                     @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_NOT_FOUND,
                             description = ApiResponseConstants.NOT_FOUND_DESCRIPTION,
