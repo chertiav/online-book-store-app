@@ -6,19 +6,19 @@ import static com.achdev.onlinebookstoreapp.utils.TestConstants.INITIAL_INDEX;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.INVALID_ID;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.NEW_CATEGORY_NAME;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SAMPLE_TEST_ID;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.createCategoryRequestDtoFromCategory;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.createPage;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.createSampleCategoryRequestDto;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.loadAllCategories;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.mapCategoryToDto;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.validateObjectDto;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.verifyPageContent;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.categoryFromRequestDto;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createCategoryRequestDtoFromCategory;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createPage;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createSampleCategoryRequestDto;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.loadAllCategories;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.mapCategoryToDto;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.validateObjectDto;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.verifyPageContent;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -78,8 +78,8 @@ class CategoryServiceImplTest {
         //Then
         verifyPageContent(expected, actual);
 
-        verify(categoryRepository, times(1)).findAll(pageable);
-        verify(categoryMapper, times(1)).toDto(category);
+        verify(categoryRepository).findAll(pageable);
+        verify(categoryMapper).toDto(category);
         verifyNoMoreInteractions(categoryRepository, categoryMapper);
     }
 
@@ -99,7 +99,7 @@ class CategoryServiceImplTest {
         //Then
         verifyPageContent(expected, actual);
 
-        verify(categoryRepository, times(1)).findAll(pageable);
+        verify(categoryRepository).findAll(pageable);
         verifyNoInteractions(categoryMapper);
     }
 
@@ -119,8 +119,8 @@ class CategoryServiceImplTest {
         //Then
         validateObjectDto(expected, actual);
 
-        verify(categoryRepository, times(1)).findById(category.getId());
-        verify(categoryMapper, times(1)).toDto(category);
+        verify(categoryRepository).findById(category.getId());
+        verify(categoryMapper).toDto(category);
         verifyNoMoreInteractions(categoryRepository, categoryMapper);
     }
 
@@ -140,7 +140,7 @@ class CategoryServiceImplTest {
 
         assertEquals(expected, actual, EXCEPTION_MESSAGE_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
 
-        verify(categoryRepository, times(1)).findById(INVALID_ID);
+        verify(categoryRepository).findById(INVALID_ID);
         verifyNoMoreInteractions(categoryRepository, categoryMapper);
     }
 
@@ -165,10 +165,10 @@ class CategoryServiceImplTest {
         //Then
         validateObjectDto(expected, actual);
 
-        verify(categoryMapper, times(1)).toModel(requestDto);
+        verify(categoryMapper).toModel(requestDto);
 
-        verify(categoryRepository, times(1)).save(categoryModel);
-        verify(categoryMapper, times(1)).toDto(category);
+        verify(categoryRepository).save(categoryModel);
+        verify(categoryMapper).toDto(category);
         verifyNoMoreInteractions(categoryRepository, categoryMapper);
     }
 
@@ -200,10 +200,10 @@ class CategoryServiceImplTest {
         //Then
         validateObjectDto(expected, actual);
 
-        verify(categoryRepository, times(1)).findById(category.getId());
-        verify(categoryMapper, times(1)).updateCategoryFromDto(requestDto, category);
-        verify(categoryRepository, times(1)).save(category);
-        verify(categoryMapper, times(1)).toDto(category);
+        verify(categoryRepository).findById(category.getId());
+        verify(categoryMapper).updateCategoryFromDto(requestDto, category);
+        verify(categoryRepository).save(category);
+        verify(categoryMapper).toDto(category);
         verifyNoMoreInteractions(categoryRepository, categoryMapper);
     }
 
@@ -217,14 +217,7 @@ class CategoryServiceImplTest {
         assertDoesNotThrow(() -> categoryService.deleteById(SAMPLE_TEST_ID));
 
         // Then
-        verify(categoryRepository, times(1)).deleteById(SAMPLE_TEST_ID);
+        verify(categoryRepository).deleteById(SAMPLE_TEST_ID);
         verifyNoMoreInteractions(categoryRepository);
-    }
-
-    private Category categoryFromRequestDto(CreateCategoryRequestDto requestDto) {
-        Category category = new Category();
-        category.setName(requestDto.getName());
-        category.setDescription(requestDto.getDescription());
-        return category;
     }
 }

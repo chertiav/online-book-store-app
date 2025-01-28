@@ -15,23 +15,24 @@ import static com.achdev.onlinebookstoreapp.utils.TestConstants.INVALID_ID;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.NEW_CATEGORY_NAME;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.OBJECT_SHOULD_NO_LONGER_EXIST_AFTER_DELETION;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.PATH_SEPARATOR;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.createCategoryRequestDtoFromCategory;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.createErrorDetailMap;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.createErrorResponse;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.createPageResponse;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.createSampleCategoryRequestDto;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.executeSqlScripts;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.loadAllBooks;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.loadAllCategories;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.mapCategoryToDto;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.mapMvcResultToObjectDto;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.parseErrorResponseFromMvcResult;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.parseObjectDtoPageResponse;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.scaleBookPrices;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.validateObjectDto;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.verifyErrorResponseEquality;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.verifyPageResponseMatch;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.verifyResponseEqualityWithExpected;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createCategoryDtoFromRequest;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createCategoryRequestDtoFromCategory;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createErrorDetailMap;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createErrorResponse;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createPageResponse;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createSampleCategoryRequestDto;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.executeSqlScripts;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.loadAllBooks;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.loadAllCategories;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.mapCategoryToDto;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.mapMvcResultToObjectDto;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.parseErrorResponseFromMvcResult;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.parseObjectDtoPageResponse;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.scaleBookPrices;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.validateObjectDto;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.verifyErrorResponseEquality;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.verifyPageResponseMatch;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.verifyResponseEqualityWithExpected;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -50,7 +51,7 @@ import com.achdev.onlinebookstoreapp.mapper.BookMapper;
 import com.achdev.onlinebookstoreapp.model.Book;
 import com.achdev.onlinebookstoreapp.model.Category;
 import com.achdev.onlinebookstoreapp.repository.category.CategoryRepository;
-import com.achdev.onlinebookstoreapp.utils.TestHelper;
+import com.achdev.onlinebookstoreapp.utils.TestUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.Connection;
 import java.util.List;
@@ -142,7 +143,7 @@ class CategoryControllerTest {
     void getAll_ValidPageable_ShouldReturnPageOfCategoryDto() throws Exception {
         //Given
         List<CategoryDto> categoryDtos = categories.stream()
-                .map(TestHelper::mapCategoryToDto)
+                .map(TestUtil::mapCategoryToDto)
                 .toList();
         PageResponse<CategoryDto> expected = createPageResponse(categoryDtos);
 
@@ -522,12 +523,5 @@ class CategoryControllerTest {
         //Then
         CommonApiErrorResponse actual = parseErrorResponseFromMvcResult(result, objectMapper);
         verifyErrorResponseEquality(actual, expected);
-    }
-
-    private CategoryDto createCategoryDtoFromRequest(CreateCategoryRequestDto requestDto) {
-        CategoryDto categoryDto = new CategoryDto();
-        categoryDto.setName(requestDto.getName());
-        categoryDto.setDescription(requestDto.getDescription());
-        return categoryDto;
     }
 }

@@ -3,6 +3,7 @@ package com.achdev.onlinebookstoreapp.utils;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SHOULD_NOT_BE_NULL;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.AUTHOR_SEARCH_PARAMETER;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.CURRENT_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH;
@@ -18,7 +19,10 @@ import static com.achdev.onlinebookstoreapp.utils.TestConstants.SAMPLE_BOOK_PRIC
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SAMPLE_BOOK_TITLE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SAMPLE_CATEGORY_DESCRIPTION;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SAMPLE_CATEGORY_NAME;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.SEARCH_KEY_AUTHOR;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.SEARCH_KEY_TITLE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.TIMESTAMP_FIELD;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.TITLE_SEARCH_PARAMETER;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE;
 import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
@@ -26,6 +30,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.achdev.onlinebookstoreapp.dto.book.BookDto;
+import com.achdev.onlinebookstoreapp.dto.book.BookDtoWithoutCategoryIds;
 import com.achdev.onlinebookstoreapp.dto.book.BookSearchParameters;
 import com.achdev.onlinebookstoreapp.dto.book.CreateBookRequestDto;
 import com.achdev.onlinebookstoreapp.dto.category.CategoryDto;
@@ -48,17 +54,21 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
-public final class TestHelper {
-    private TestHelper() {
+public final class TestUtil {
+    private TestUtil() {
     }
 
     // ========================methods for generel usages===================================
@@ -284,6 +294,38 @@ public final class TestHelper {
         return PageResponse.of(new PageImpl<>(objectDtos, pageable, objectDtos.size()));
     }
 
+    public static BookDto mapBookToDto(Book book) {
+        BookDto bookDto = new BookDto();
+        bookDto.setId(book.getId());
+        bookDto.setTitle(book.getTitle());
+        bookDto.setAuthor(book.getAuthor());
+        bookDto.setIsbn(book.getIsbn());
+        bookDto.setPrice(book.getPrice().setScale(2, RoundingMode.HALF_UP));
+        bookDto.setDescription(book.getDescription());
+        bookDto.setCoverImage(book.getCoverImage());
+        bookDto.setCategoryIds(getCategoryIds(book.getCategories()));
+        return bookDto;
+    }
+
+    public static MultiValueMap<String, String> createSearchParams(String title, String author) {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add(TITLE_SEARCH_PARAMETER, title);
+        params.add(AUTHOR_SEARCH_PARAMETER, author);
+        return params;
+    }
+
+    public static BookDto createBookDtoFromRequest(CreateBookRequestDto requestDto) {
+        BookDto expected = new BookDto();
+        expected.setTitle(requestDto.getTitle());
+        expected.setAuthor(requestDto.getAuthor());
+        expected.setIsbn(requestDto.getIsbn());
+        expected.setPrice(requestDto.getPrice());
+        expected.setDescription(requestDto.getDescription());
+        expected.setCoverImage(requestDto.getCoverImage());
+        expected.setCategoryIds(Set.of(1L, 2L));
+        return expected;
+    }
+
     //========================methods for repositories======================================
     public static <T> void verifyPageContent(Page<T> expected, Page<T> actual) {
         assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
@@ -331,7 +373,54 @@ public final class TestHelper {
         return title + " with ID " + id + " should not be found in the repository";
     }
 
-    //========================methods for controllers======================================
+    //========================methods for services======================================
+    public static Set<Long> getCategoryIds(Set<Category> categories) {
+        return categories.stream()
+                .map(Category::getId)
+                .collect(Collectors.toSet());
+    }
+
+    public static BookDtoWithoutCategoryIds mapBookToBookDtoWithoutCategoryIds(Book book) {
+        BookDtoWithoutCategoryIds bookDto = new BookDtoWithoutCategoryIds();
+        bookDto.setId(book.getId());
+        bookDto.setTitle(book.getTitle());
+        bookDto.setAuthor(book.getAuthor());
+        bookDto.setIsbn(book.getIsbn());
+        bookDto.setPrice(book.getPrice());
+        bookDto.setDescription(book.getDescription());
+        bookDto.setCoverImage(book.getCoverImage());
+        return bookDto;
+    }
+
+    public static Specification<Book> getBookSpecification(String title, String author) {
+        return Specification
+                .where(createEqualSpecification(SEARCH_KEY_TITLE, title))
+                .and(createEqualSpecification(SEARCH_KEY_AUTHOR, author));
+    }
+
+    public static Specification<Book> createEqualSpecification(String key, String value) {
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get(key), value);
+    }
+
+    public static Book bookFromRequestDto(CreateBookRequestDto requestDto) {
+        Book book = new Book();
+        book.setTitle(requestDto.getTitle());
+        book.setAuthor(requestDto.getAuthor());
+        book.setIsbn(requestDto.getIsbn());
+        book.setPrice(requestDto.getPrice());
+        book.setDescription(requestDto.getDescription());
+        book.setCoverImage(requestDto.getCoverImage());
+        book.setCategories(mapToCategories(requestDto));
+        return book;
+    }
+
+    public static Set<Category> mapToCategories(CreateBookRequestDto requestDto) {
+        return requestDto.getCategories().stream()
+                .map(TestUtil::getCategory)
+                .collect(Collectors.toSet());
+    }
+
     public static <T> Page<T> createPage(List<T> listOfObjects, Pageable pageable) {
         return new PageImpl<>(listOfObjects, pageable, listOfObjects.size());
     }
@@ -391,6 +480,20 @@ public final class TestHelper {
         return categoryDto;
     }
 
+    public static CategoryDto createCategoryDtoFromRequest(CreateCategoryRequestDto requestDto) {
+        CategoryDto categoryDto = new CategoryDto();
+        categoryDto.setName(requestDto.getName());
+        categoryDto.setDescription(requestDto.getDescription());
+        return categoryDto;
+    }
+
+    public static Category categoryFromRequestDto(CreateCategoryRequestDto requestDto) {
+        Category category = new Category();
+        category.setName(requestDto.getName());
+        category.setDescription(requestDto.getDescription());
+        return category;
+    }
+
     private static Book createBook(
             Long id, String title, String author, String isbn, BigDecimal price,
             String description, String coverImage, Set<Category> categories
@@ -429,5 +532,11 @@ public final class TestHelper {
             }
         }
         return categorySet;
+    }
+
+    private static Category getCategory(Long categoryId) {
+        Category category = new Category();
+        category.setId(categoryId);
+        return category;
     }
 }

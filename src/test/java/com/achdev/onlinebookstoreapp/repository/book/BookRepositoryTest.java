@@ -7,16 +7,20 @@ import static com.achdev.onlinebookstoreapp.utils.TestConstants.FIRST_BOOK_AUTHO
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.FIRST_BOOK_TITLE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ID_FIELD;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.INITIAL_INDEX;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.INVALID_AUTHOR;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.INVALID_ID;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.INVALID_TITLE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SAMPLE_TEST_ID;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SEARCH_KEY_AUTHOR;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SEARCH_KEY_TITLE;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.createSampleBook;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.executeSqlScripts;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.getDeleteCheckMessage;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.getNotFoundMessage;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.loadAllBooks;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.scaleBookPrices;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.verifyPageContent;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createEqualSpecification;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createSampleBook;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.executeSqlScripts;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.getDeleteCheckMessage;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.getNotFoundMessage;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.loadAllBooks;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.scaleBookPrices;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.verifyPageContent;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -26,6 +30,7 @@ import com.achdev.onlinebookstoreapp.model.Book;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 import javax.sql.DataSource;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterAll;
@@ -35,6 +40,9 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -50,6 +58,7 @@ import org.springframework.data.jpa.domain.Specification;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class BookRepositoryTest {
     private static final long TEST_NEW_BOOK_ID = 12L;
+    private static final String BOOK = "Book";
     private static List<Book> books;
     @Autowired
     private BookRepository bookRepository;
@@ -176,6 +185,24 @@ class BookRepositoryTest {
     }
 
     @Order(6)
+    @ParameterizedTest
+    @MethodSource("provideSearchParameters")
+    @DisplayName("Should return empty page for invalid search parameters")
+    void search_InvalidParameters_ShouldReturnEmptyPage(String searchKey, String searchValue) {
+        // Given
+        Specification<Book> specification = Specification
+                .where(createEqualSpecification(searchKey, searchValue));
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<Book> expected = new PageImpl<>(List.of(), pageable, 0);
+
+        // When
+        Page<Book> actual = bookRepository.findAll(specification, pageable);
+
+        // Then
+        verifyPageContent(actual, expected);
+    }
+
+    @Order(7)
     @Test
     @DisplayName("Save book successfully when valid data is provided")
     void save_ValidData_ShouldReturnBook() {
@@ -195,12 +222,11 @@ class BookRepositoryTest {
         assertNotNull(actual.getId());
     }
 
-    @Order(7)
+    @Order(8)
     @Test
     @DisplayName("Delete book successfully when valid ID is provided")
     void deleteById_ValidId_ShouldDeleteBook() {
         //Given
-        String title = "Book";
         Optional<Book> bookResultBefore = bookRepository.findById(SAMPLE_TEST_ID);
 
         // When
@@ -209,12 +235,31 @@ class BookRepositoryTest {
         // Then
         Optional<Book> bookResultAfter = bookRepository.findById(SAMPLE_TEST_ID);
 
-        assertTrue(bookResultBefore.isPresent(), getDeleteCheckMessage(title, SAMPLE_TEST_ID));
-        assertTrue(bookResultAfter.isEmpty(), getNotFoundMessage(title, SAMPLE_TEST_ID));
+        assertTrue(bookResultBefore.isPresent(), getDeleteCheckMessage(BOOK, SAMPLE_TEST_ID));
+        assertTrue(bookResultAfter.isEmpty(), getNotFoundMessage(BOOK, SAMPLE_TEST_ID));
     }
 
-    private Specification<Book> createEqualSpecification(String key, String value) {
-        return (root, query, criteriaBuilder) ->
-                criteriaBuilder.equal(root.get(key), value);
+    @Order(9)
+    @Test
+    @DisplayName("Should not delete book when invalid ID is provided")
+    void deleteById_InvalidId_ShouldNotDeleteAnyBook() {
+        // Given
+        Optional<Book> bookResultBefore = bookRepository.findById(INVALID_ID);
+
+        // When
+        bookRepository.deleteById(INVALID_ID);
+
+        // Then
+        Optional<Book> bookResultAfter = bookRepository.findById(INVALID_ID);
+
+        assertTrue(bookResultBefore.isEmpty(), getNotFoundMessage(BOOK, INVALID_ID));
+        assertTrue(bookResultAfter.isEmpty(), getNotFoundMessage(BOOK, INVALID_ID));
+    }
+
+    private static Stream<Arguments> provideSearchParameters() {
+        return Stream.of(
+                Arguments.of(SEARCH_KEY_TITLE, INVALID_TITLE),
+                Arguments.of(SEARCH_KEY_AUTHOR, INVALID_AUTHOR)
+        );
     }
 }

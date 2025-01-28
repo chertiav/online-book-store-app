@@ -8,22 +8,23 @@ import static com.achdev.onlinebookstoreapp.utils.TestConstants.INITIAL_INDEX;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.INVALID_ID;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.NEW_BOOK_TITLE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SAMPLE_TEST_ID;
-import static com.achdev.onlinebookstoreapp.utils.TestConstants.SEARCH_KEY_AUTHOR;
-import static com.achdev.onlinebookstoreapp.utils.TestConstants.SEARCH_KEY_TITLE;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.createBookRequestDtoFromBook;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.createInvalidSearchParameters;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.createPage;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.createSampleBookRequestDto;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.loadAllBooks;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.scaleBookPrices;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.validateObjectDto;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.verifyPageContent;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.bookFromRequestDto;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createBookRequestDtoFromBook;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createInvalidSearchParameters;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createPage;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createSampleBookRequestDto;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.getBookSpecification;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.loadAllBooks;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.mapBookToBookDtoWithoutCategoryIds;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.mapBookToDto;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.scaleBookPrices;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.validateObjectDto;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.verifyPageContent;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -36,13 +37,10 @@ import com.achdev.onlinebookstoreapp.dto.book.CreateBookRequestDto;
 import com.achdev.onlinebookstoreapp.exception.EntityNotFoundException;
 import com.achdev.onlinebookstoreapp.mapper.BookMapper;
 import com.achdev.onlinebookstoreapp.model.Book;
-import com.achdev.onlinebookstoreapp.model.Category;
 import com.achdev.onlinebookstoreapp.repository.book.BookRepository;
 import com.achdev.onlinebookstoreapp.repository.book.BookSpecificationBuilder;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -79,7 +77,7 @@ class BookServiceImplTest {
     void findAll_ValidPageable_ShouldReturnPageOfBookDto() {
         //Given
         Book book = books.get(INITIAL_INDEX);
-        BookDto bookDto = mapToDto(book);
+        BookDto bookDto = mapBookToDto(book);
         Pageable pageable = PageRequest.of(0, 20);
 
         Page<Book> bookPage = createPage(List.of(book), pageable);
@@ -94,8 +92,8 @@ class BookServiceImplTest {
         //Then
         verifyPageContent(expected, actual);
 
-        verify(bookRepository, times(1)).findAll(pageable);
-        verify(bookMapper, times(1)).toDto(book);
+        verify(bookRepository).findAll(pageable);
+        verify(bookMapper).toDto(book);
         verifyNoMoreInteractions(bookRepository, bookMapper);
     }
 
@@ -115,7 +113,7 @@ class BookServiceImplTest {
         //Then
         verifyPageContent(expected, actual);
 
-        verify(bookRepository, times(1)).findAll(pageable);
+        verify(bookRepository).findAll(pageable);
         verifyNoInteractions(bookMapper);
     }
 
@@ -141,9 +139,8 @@ class BookServiceImplTest {
         //Then
         verifyPageContent(expected, actual);
 
-        verify(bookRepository, times(1))
-                .findAllByCategories(categoryId, pageable);
-        verify(bookMapper, times(1)).toDtoWithoutCategories(book);
+        verify(bookRepository).findAllByCategories(categoryId, pageable);
+        verify(bookMapper).toDtoWithoutCategories(book);
         verifyNoMoreInteractions(bookRepository, bookMapper);
     }
 
@@ -152,7 +149,7 @@ class BookServiceImplTest {
     void findById_ValidId_ShouldReturnBookDto() {
         //Given
         Book book = books.get(INITIAL_INDEX);
-        BookDto expected = mapToDto(book);
+        BookDto expected = mapBookToDto(book);
 
         when(bookRepository.findById(book.getId())).thenReturn(Optional.of(book));
         when(bookMapper.toDto(book)).thenReturn(expected);
@@ -163,8 +160,8 @@ class BookServiceImplTest {
         //Then
         validateObjectDto(expected, actual);
 
-        verify(bookRepository, times(1)).findById(book.getId());
-        verify(bookMapper, times(1)).toDto(book);
+        verify(bookRepository).findById(book.getId());
+        verify(bookMapper).toDto(book);
         verifyNoMoreInteractions(bookRepository, bookMapper);
     }
 
@@ -184,7 +181,7 @@ class BookServiceImplTest {
 
         assertEquals(expected, actual, EXCEPTION_MESSAGE_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
 
-        verify(bookRepository, times(1)).findById(INVALID_ID);
+        verify(bookRepository).findById(INVALID_ID);
         verifyNoMoreInteractions(bookRepository, bookMapper);
     }
 
@@ -193,7 +190,7 @@ class BookServiceImplTest {
     void search_ValidParameters_ShouldReturnPageOfBookDto() {
         //Given
         Book book = books.get(INITIAL_INDEX);
-        BookDto bookDto = mapToDto(book);
+        BookDto bookDto = mapBookToDto(book);
         Pageable pageable = PageRequest.of(0, 20);
 
         BookSearchParameters searchParameters = createInvalidSearchParameters(
@@ -218,9 +215,9 @@ class BookServiceImplTest {
         Page<BookDto> expected = createPage(List.of(bookDto), pageable);
         verifyPageContent(expected, actual);
 
-        verify(bookSpecificationBuilder, times(1)).build(searchParameters);
-        verify(bookRepository, times(1)).findAll(bookSpecification, pageable);
-        verify(bookMapper, times(1)).toDto(book);
+        verify(bookSpecificationBuilder).build(searchParameters);
+        verify(bookRepository).findAll(bookSpecification, pageable);
+        verify(bookMapper).toDto(book);
         verifyNoMoreInteractions(bookSpecificationBuilder, bookRepository, bookMapper);
     }
 
@@ -234,7 +231,7 @@ class BookServiceImplTest {
         Book book = bookFromRequestDto(requestDto);
         book.setId(SAMPLE_TEST_ID);
 
-        BookDto expected = mapToDto(book);
+        BookDto expected = mapBookToDto(book);
         when(bookMapper.toModel(requestDto)).thenReturn(bookModel);
         when(bookRepository.save(bookModel)).thenReturn(book);
         when(bookMapper.toDto(book)).thenReturn(expected);
@@ -245,9 +242,9 @@ class BookServiceImplTest {
         //Then
         validateObjectDto(expected, actual);
 
-        verify(bookMapper, times(1)).toModel(requestDto);
-        verify(bookRepository, times(1)).save(bookModel);
-        verify(bookMapper, times(1)).toDto(book);
+        verify(bookMapper).toModel(requestDto);
+        verify(bookRepository).save(bookModel);
+        verify(bookMapper).toDto(book);
         verifyNoMoreInteractions(bookRepository, bookMapper);
     }
 
@@ -258,7 +255,7 @@ class BookServiceImplTest {
         Book book = books.get(INITIAL_INDEX);
         CreateBookRequestDto requestDto = createBookRequestDtoFromBook(NEW_BOOK_TITLE, book);
 
-        BookDto expected = mapToDto(book);
+        BookDto expected = mapBookToDto(book);
         expected.setTitle(NEW_BOOK_TITLE);
 
         when(bookRepository.findById(book.getId())).thenReturn(Optional.of(book));
@@ -276,10 +273,10 @@ class BookServiceImplTest {
         //Then
         validateObjectDto(expected, actual);
 
-        verify(bookRepository, times(1)).findById(book.getId());
-        verify(bookMapper, times(1)).updateBookFromDto(requestDto, book);
-        verify(bookRepository, times(1)).save(book);
-        verify(bookMapper, times(1)).toDto(book);
+        verify(bookRepository).findById(book.getId());
+        verify(bookMapper).updateBookFromDto(requestDto, book);
+        verify(bookRepository).save(book);
+        verify(bookMapper).toDto(book);
         verifyNoMoreInteractions(bookRepository, bookMapper);
     }
 
@@ -293,74 +290,7 @@ class BookServiceImplTest {
         assertDoesNotThrow(() -> bookService.deleteById(SAMPLE_TEST_ID));
 
         // Then
-        verify(bookRepository, times(1)).deleteById(SAMPLE_TEST_ID);
+        verify(bookRepository).deleteById(SAMPLE_TEST_ID);
         verifyNoMoreInteractions(bookRepository);
     }
-
-    private BookDto mapToDto(Book book) {
-        BookDto bookDto = new BookDto();
-        bookDto.setId(book.getId());
-        bookDto.setTitle(book.getTitle());
-        bookDto.setAuthor(book.getAuthor());
-        bookDto.setIsbn(book.getIsbn());
-        bookDto.setPrice(book.getPrice());
-        bookDto.setDescription(book.getDescription());
-        bookDto.setCoverImage(book.getCoverImage());
-        bookDto.setCategoryIds(getCategoryIds(book.getCategories()));
-        return bookDto;
-    }
-
-    private Set<Long> getCategoryIds(Set<Category> categories) {
-        return categories.stream()
-                .map(Category::getId)
-                .collect(Collectors.toSet());
-    }
-
-    private BookDtoWithoutCategoryIds mapBookToBookDtoWithoutCategoryIds(Book book) {
-        BookDtoWithoutCategoryIds bookDto = new BookDtoWithoutCategoryIds();
-        bookDto.setId(book.getId());
-        bookDto.setTitle(book.getTitle());
-        bookDto.setAuthor(book.getAuthor());
-        bookDto.setIsbn(book.getIsbn());
-        bookDto.setPrice(book.getPrice());
-        bookDto.setDescription(book.getDescription());
-        bookDto.setCoverImage(book.getCoverImage());
-        return bookDto;
-    }
-
-    private Specification<Book> getBookSpecification(String title, String author) {
-        return Specification
-                .where(createEqualSpecification(SEARCH_KEY_TITLE, title))
-                .and(createEqualSpecification(SEARCH_KEY_AUTHOR, author));
-    }
-
-    private Specification<Book> createEqualSpecification(String key, String value) {
-        return (root, query, criteriaBuilder) ->
-                criteriaBuilder.equal(root.get(key), value);
-    }
-
-    private Book bookFromRequestDto(CreateBookRequestDto requestDto) {
-        Book book = new Book();
-        book.setTitle(requestDto.getTitle());
-        book.setAuthor(requestDto.getAuthor());
-        book.setIsbn(requestDto.getIsbn());
-        book.setPrice(requestDto.getPrice());
-        book.setDescription(requestDto.getDescription());
-        book.setCoverImage(requestDto.getCoverImage());
-        book.setCategories(mapToCategories(requestDto));
-        return book;
-    }
-
-    private Set<Category> mapToCategories(CreateBookRequestDto requestDto) {
-        return requestDto.getCategories().stream()
-                .map(this::getCategory)
-                .collect(Collectors.toSet());
-    }
-
-    private Category getCategory(Long categoryId) {
-        Category category = new Category();
-        category.setId(categoryId);
-        return category;
-    }
-
 }

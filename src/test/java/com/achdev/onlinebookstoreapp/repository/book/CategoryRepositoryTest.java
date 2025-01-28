@@ -4,13 +4,14 @@ import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SH
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SHOULD_NOT_BE_NULL;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ID_FIELD;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.INITIAL_INDEX;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.INVALID_ID;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SAMPLE_TEST_ID;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.createSampleCategory;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.executeSqlScripts;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.getDeleteCheckMessage;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.getNotFoundMessage;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.loadAllCategories;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.verifyPageContent;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createSampleCategory;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.executeSqlScripts;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.getDeleteCheckMessage;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.getNotFoundMessage;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.loadAllCategories;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.verifyPageContent;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -44,6 +45,7 @@ import org.springframework.data.domain.Pageable;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class CategoryRepositoryTest {
     public static final long TEST_CATEGORY_ID = 21L;
+    private static final String CATEGORY = "Category";
     private static List<Category> categories;
     @Autowired
     private CategoryRepository categoryRepository;
@@ -152,7 +154,6 @@ public class CategoryRepositoryTest {
     @DisplayName("Delete category successfully when valid ID is provided")
     void deleteById_ValidId_ShouldDeleteCategory() {
         //Given
-        String title = "Category";
         Optional<Category> categoryResultBefore = categoryRepository.findById(SAMPLE_TEST_ID);
 
         // When
@@ -161,7 +162,25 @@ public class CategoryRepositoryTest {
         // Then
         Optional<Category> categoryResultAfter = categoryRepository.findById(SAMPLE_TEST_ID);
 
-        assertTrue(categoryResultBefore.isPresent(), getDeleteCheckMessage(title, SAMPLE_TEST_ID));
-        assertTrue(categoryResultAfter.isEmpty(), getNotFoundMessage(title, SAMPLE_TEST_ID));
+        assertTrue(categoryResultBefore.isPresent(),
+                getDeleteCheckMessage(CATEGORY, SAMPLE_TEST_ID));
+        assertTrue(categoryResultAfter.isEmpty(), getNotFoundMessage(CATEGORY, SAMPLE_TEST_ID));
+    }
+
+    @Order(6)
+    @Test
+    @DisplayName("Should not category when invalid ID is provided")
+    void deleteById_InvalidId_ShouldNotDeleteAnyCategory() {
+        //Given
+        Optional<Category> categoryResultBefore = categoryRepository.findById(INVALID_ID);
+
+        // When
+        categoryRepository.deleteById(INVALID_ID);
+
+        // Then
+        Optional<Category> categoryResultAfter = categoryRepository.findById(INVALID_ID);
+
+        assertTrue(categoryResultBefore.isEmpty(), getNotFoundMessage(CATEGORY, INVALID_ID));
+        assertTrue(categoryResultAfter.isEmpty(), getNotFoundMessage(CATEGORY, INVALID_ID));
     }
 }

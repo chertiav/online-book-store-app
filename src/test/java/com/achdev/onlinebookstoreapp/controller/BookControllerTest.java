@@ -1,7 +1,6 @@
 package com.achdev.onlinebookstoreapp.controller;
 
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACCESS_DENIED;
-import static com.achdev.onlinebookstoreapp.utils.TestConstants.AUTHOR_SEARCH_PARAMETER;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.BOOKS_ENDPOINT;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.CAN_T_UPDATE_BOOK_BY_ID;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.EMPTY_VALUE;
@@ -19,22 +18,24 @@ import static com.achdev.onlinebookstoreapp.utils.TestConstants.NEW_BOOK_TITLE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.OBJECT_SHOULD_NO_LONGER_EXIST_AFTER_DELETION;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.PATH_SEPARATOR;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SEARCH_ENDPOINT;
-import static com.achdev.onlinebookstoreapp.utils.TestConstants.TITLE_SEARCH_PARAMETER;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.createBookRequestDtoFromBook;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.createErrorDetailMap;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.createErrorResponse;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.createPageResponse;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.createSampleBookRequestDto;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.executeSqlScripts;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.loadAllBooks;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.mapMvcResultToObjectDto;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.parseErrorResponseFromMvcResult;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.parseObjectDtoPageResponse;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.scaleBookPrices;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.validateObjectDto;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.verifyErrorResponseEquality;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.verifyPageResponseMatch;
-import static com.achdev.onlinebookstoreapp.utils.TestHelper.verifyResponseEqualityWithExpected;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createBookDtoFromRequest;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createBookRequestDtoFromBook;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createErrorDetailMap;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createErrorResponse;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createPageResponse;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createSampleBookRequestDto;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.createSearchParams;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.executeSqlScripts;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.loadAllBooks;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.mapBookToDto;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.mapMvcResultToObjectDto;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.parseErrorResponseFromMvcResult;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.parseObjectDtoPageResponse;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.scaleBookPrices;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.validateObjectDto;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.verifyErrorResponseEquality;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.verifyPageResponseMatch;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.verifyResponseEqualityWithExpected;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -48,15 +49,13 @@ import com.achdev.onlinebookstoreapp.dto.book.BookDto;
 import com.achdev.onlinebookstoreapp.dto.book.CreateBookRequestDto;
 import com.achdev.onlinebookstoreapp.dto.errors.CommonApiErrorResponse;
 import com.achdev.onlinebookstoreapp.dto.page.PageResponse;
-import com.achdev.onlinebookstoreapp.mapper.BookMapper;
 import com.achdev.onlinebookstoreapp.model.Book;
 import com.achdev.onlinebookstoreapp.repository.book.BookRepository;
+import com.achdev.onlinebookstoreapp.utils.TestUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.math.RoundingMode;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.sql.DataSource;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterAll;
@@ -74,7 +73,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -88,8 +86,6 @@ class BookControllerTest {
     private ObjectMapper objectMapper;
     @Autowired
     private BookRepository bookRepository;
-    @Autowired
-    private BookMapper bookMapper;
 
     @BeforeAll
     static void setUp(
@@ -141,7 +137,7 @@ class BookControllerTest {
     void getAll_ValidPageable_ShouldReturnPageOfBookDto() throws Exception {
         //Given
         List<BookDto> bookDtos = books.stream()
-                .map(this::mapBookToBookDto)
+                .map(TestUtil::mapBookToDto)
                 .toList();
         PageResponse<BookDto> expected = createPageResponse(bookDtos);
 
@@ -186,7 +182,7 @@ class BookControllerTest {
     void getBookById_ValidId_ShouldReturnBookDto() throws Exception {
         //Given
         Book book = books.get(INITIAL_INDEX);
-        BookDto expected = mapBookToBookDto(book);
+        BookDto expected = mapBookToDto(book);
 
         //When
         MvcResult result = mockMvc
@@ -250,7 +246,7 @@ class BookControllerTest {
     @Test
     void searchBooks_ValidParameters_ShouldReturnPageOfBook() throws Exception {
         //Given
-        List<BookDto> bookDtos = List.of(mapBookToBookDto(books.get(INITIAL_INDEX)));
+        List<BookDto> bookDtos = List.of(mapBookToDto(books.get(INITIAL_INDEX)));
         PageResponse<BookDto> expected = createPageResponse(bookDtos);
         MultiValueMap<String, String> params = createSearchParams(
                 FIRST_BOOK_TITLE,
@@ -412,7 +408,7 @@ class BookControllerTest {
         Book book = books.get(INITIAL_INDEX);
         CreateBookRequestDto requestDto = createBookRequestDtoFromBook(NEW_BOOK_TITLE, book);
 
-        BookDto expected = mapBookToBookDto(book);
+        BookDto expected = mapBookToDto(book);
         expected.setTitle(NEW_BOOK_TITLE);
         String jsonRequest = objectMapper.writeValueAsString(requestDto);
 
@@ -547,30 +543,5 @@ class BookControllerTest {
         //Then
         CommonApiErrorResponse actual = parseErrorResponseFromMvcResult(result, objectMapper);
         verifyErrorResponseEquality(actual, expected);
-    }
-
-    private BookDto mapBookToBookDto(Book book) {
-        BookDto dto = bookMapper.toDto(book);
-        dto.setPrice(dto.getPrice().setScale(2, RoundingMode.HALF_UP));
-        return dto;
-    }
-
-    private MultiValueMap<String, String> createSearchParams(String title, String author) {
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add(TITLE_SEARCH_PARAMETER, title);
-        params.add(AUTHOR_SEARCH_PARAMETER, author);
-        return params;
-    }
-
-    private BookDto createBookDtoFromRequest(CreateBookRequestDto requestDto) {
-        BookDto expected = new BookDto();
-        expected.setTitle(requestDto.getTitle());
-        expected.setAuthor(requestDto.getAuthor());
-        expected.setIsbn(requestDto.getIsbn());
-        expected.setPrice(requestDto.getPrice());
-        expected.setDescription(requestDto.getDescription());
-        expected.setCoverImage(requestDto.getCoverImage());
-        expected.setCategoryIds(Set.of(1L, 2L));
-        return expected;
     }
 }
