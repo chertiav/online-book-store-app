@@ -1,4 +1,4 @@
-package com.achdev.onlinebookstoreapp.repository.book;
+package com.achdev.onlinebookstoreapp.repository.category;
 
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SHOULD_NOT_BE_NULL;
@@ -18,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.testcontainers.shaded.org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 
 import com.achdev.onlinebookstoreapp.model.Category;
-import com.achdev.onlinebookstoreapp.repository.category.CategoryRepository;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;

@@ -118,7 +118,7 @@ class CategoryControllerTest {
                     connection,
                     "database/books/add-books-to-books-table.sql",
                     "database/category/add-categories-to-categories-table.sql",
-                    "database/books/categories/add-books_categories-to_books_categories-table.sql"
+                    "database/books/categories/add-all-to_books_categories-table.sql"
             );
         }
     }

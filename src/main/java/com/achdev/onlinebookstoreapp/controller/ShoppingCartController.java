@@ -63,6 +63,11 @@ public class ShoppingCartController {
                             responseCode = ApiResponseConstants.RESPONSE_CODE_CREATED,
                             description = "Successfully added book to user's shopping cart"
                     ),
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_BAD_REQUEST,
+                            description = ApiResponseConstants.INVALID_REQUEST_DESCRIPTION,
+                            content = @Content(schema = @Schema(
+                                    implementation = CommonApiErrorResponse.class))
+                    ),
                     @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_NOT_FOUND,
                             description = ApiResponseConstants.NOT_FOUND_DESCRIPTION,
                             content = @Content(schema = @Schema(
@@ -92,6 +97,11 @@ public class ShoppingCartController {
                     @ApiResponse(
                             responseCode = ApiResponseConstants.RESPONSE_CODE_OK,
                             description = "Successfully updated cart item's information"
+                    ),
+                    @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_BAD_REQUEST,
+                            description = ApiResponseConstants.INVALID_REQUEST_DESCRIPTION,
+                            content = @Content(schema = @Schema(
+                                    implementation = CommonApiErrorResponse.class))
                     ),
                     @ApiResponse(responseCode = ApiResponseConstants.RESPONSE_CODE_NOT_FOUND,
                             description = ApiResponseConstants.NOT_FOUND_DESCRIPTION,

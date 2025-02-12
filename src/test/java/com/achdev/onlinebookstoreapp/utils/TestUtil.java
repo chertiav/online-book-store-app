@@ -19,12 +19,20 @@ import static com.achdev.onlinebookstoreapp.utils.TestConstants.SAMPLE_BOOK_PRIC
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SAMPLE_BOOK_TITLE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SAMPLE_CATEGORY_DESCRIPTION;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SAMPLE_CATEGORY_NAME;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.SAMPLE_TEST_ID;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SEARCH_KEY_AUTHOR;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SEARCH_KEY_TITLE;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.TEST_USER_FIRST_NAME;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.TEST_USER_ID_TWO;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.TEST_USER_ID_TWO_EMAIL;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.TEST_USER_LAST_NAME;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.TEST_USER_PASSWORD;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.TEST_USER_SHIPPiNG_ADDRESS;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.TIMESTAMP_FIELD;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.TITLE_SEARCH_PARAMETER;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.USER_NOT_FOUND_MESSAGE;
 import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -34,12 +42,21 @@ import com.achdev.onlinebookstoreapp.dto.book.BookDto;
 import com.achdev.onlinebookstoreapp.dto.book.BookDtoWithoutCategoryIds;
 import com.achdev.onlinebookstoreapp.dto.book.BookSearchParameters;
 import com.achdev.onlinebookstoreapp.dto.book.CreateBookRequestDto;
+import com.achdev.onlinebookstoreapp.dto.cart.item.CartItemRequestDto;
+import com.achdev.onlinebookstoreapp.dto.cart.item.CartItemResponseDto;
+import com.achdev.onlinebookstoreapp.dto.cart.item.UpdateCartItemRequestDto;
 import com.achdev.onlinebookstoreapp.dto.category.CategoryDto;
 import com.achdev.onlinebookstoreapp.dto.category.CreateCategoryRequestDto;
 import com.achdev.onlinebookstoreapp.dto.errors.CommonApiErrorResponse;
 import com.achdev.onlinebookstoreapp.dto.page.PageResponse;
+import com.achdev.onlinebookstoreapp.dto.shopping.cart.ShoppingCartDto;
+import com.achdev.onlinebookstoreapp.exception.EntityNotFoundException;
 import com.achdev.onlinebookstoreapp.model.Book;
+import com.achdev.onlinebookstoreapp.model.CartItem;
 import com.achdev.onlinebookstoreapp.model.Category;
+import com.achdev.onlinebookstoreapp.model.ShoppingCart;
+import com.achdev.onlinebookstoreapp.model.User;
+import com.achdev.onlinebookstoreapp.repository.user.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -53,7 +70,9 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
@@ -187,9 +206,20 @@ public final class TestUtil {
     }
 
     public static void scaleBookPrices(List<Book> books) {
-        books.forEach(book -> book.setPrice(
-                book.getPrice().setScale(2, RoundingMode.HALF_UP)
-        ));
+        books.forEach(TestUtil::normalizeBookPrice);
+    }
+
+    public static List<CartItem> loadAllCartItems() {
+        return List.of(
+                createCartItem(1L, 2L, 5L, 3),
+                createCartItem(2L, 2L, 3L, 1),
+                createCartItem(3L, 2L, 1L, 2),
+                createCartItem(4L, 2L, 6L, 2),
+                createCartItem(5L, 2L, 7L, 1),
+                createCartItem(6L, 3L, 2L, 4),
+                createCartItem(7L, 3L, 10L, 1),
+                createCartItem(8L, 3L, 6L, 2)
+        );
     }
 
     //========================methods for controllers======================================
@@ -326,6 +356,38 @@ public final class TestUtil {
         return expected;
     }
 
+    public static ShoppingCartDto createShoppingCartDto(
+            Long userId,
+            List<CartItemResponseDto> cartItemResponseDto
+    ) {
+        ShoppingCartDto expected = new ShoppingCartDto();
+        expected.setId(userId);
+        expected.setUserId(userId);
+        expected.setCartItems(cartItemResponseDto);
+        return expected;
+    }
+
+    public static List<CartItemResponseDto> createCartItemResponseDto(Set<CartItem> userCartItems) {
+        return userCartItems.stream()
+                .map(TestUtil::mapCartItemToResponseDto)
+                .toList();
+    }
+
+    public static CartItemResponseDto mapCartItemToResponseDto(CartItem cartItem) {
+        return new CartItemResponseDto(
+                cartItem.getId(),
+                cartItem.getBook().getId(),
+                cartItem.getBook().getTitle(),
+                cartItem.getQuantity());
+    }
+
+    public static CartItemRequestDto createCartItemRequestDto(Long bookId, Integer quantity) {
+        CartItemRequestDto requestDto = new CartItemRequestDto();
+        requestDto.setBookId(bookId);
+        requestDto.setQuantity(quantity);
+        return requestDto;
+    }
+
     //========================methods for repositories======================================
     public static <T> void verifyPageContent(Page<T> expected, Page<T> actual) {
         assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
@@ -371,6 +433,133 @@ public final class TestUtil {
 
     public static String getNotFoundMessage(String title, Long id) {
         return title + " with ID " + id + " should not be found in the repository";
+    }
+
+    public static User createTestUser(Long id, String email) {
+        User user = new User();
+        user.setId(id);
+        user.setEmail(email);
+        user.setPassword(TEST_USER_PASSWORD);
+        user.setFirstName(TEST_USER_FIRST_NAME);
+        user.setLastName(TEST_USER_LAST_NAME);
+        user.setShippingAddress(TEST_USER_SHIPPiNG_ADDRESS);
+        user.setDeleted(false);
+        return user;
+    }
+
+    public static ShoppingCart createTestShoppingCart(User user) {
+        ShoppingCart shoppingCart = initializeShoppingCart(user.getId());
+        shoppingCart.setUser(user);
+        shoppingCart.setDeleted(false);
+        return shoppingCart;
+    }
+
+    public static ShoppingCartDto mapShoppingCartToDto(ShoppingCart shoppingCart) {
+        ShoppingCartDto shoppingCartDto = new ShoppingCartDto();
+        shoppingCartDto.setId(shoppingCart.getId());
+        shoppingCartDto.setUserId(shoppingCart.getUser().getId());
+        shoppingCartDto.setCartItems(List.of());
+        return shoppingCartDto;
+    }
+
+    public static CartItemRequestDto createTestCartItemRequestDto() {
+        CartItemRequestDto cartItemRequestDto = new CartItemRequestDto();
+        cartItemRequestDto.setBookId(SAMPLE_TEST_ID);
+        cartItemRequestDto.setQuantity(1);
+        return cartItemRequestDto;
+    }
+
+    public static void validateCartItemPresenceAndEquality(
+            CartItem expected,
+            Optional<CartItem> actual) {
+        assertTrue(actual.isPresent(), ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(expected, actual.get(), ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
+        assertEquals(
+                expected.getShoppingCart().getId(),
+                actual.get().getShoppingCart().getId(),
+                ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
+    }
+
+    public static CartItem createTestCartItem(
+            BookDto bookDto,
+            int quantity,
+            ShoppingCart shoppingCart
+    ) {
+        CartItem cartItem = new CartItem();
+        cartItem.setShoppingCart(shoppingCart);
+        cartItem.setBook(new Book(bookDto.getId(), bookDto.getTitle()));
+        cartItem.setQuantity(quantity);
+        cartItem.setDeleted(false);
+        return cartItem;
+    }
+
+    public static ShoppingCart initializeTestShoppingCart() {
+        User user = createTestUser(TEST_USER_ID_TWO, TEST_USER_ID_TWO_EMAIL);
+        ShoppingCart cart = createTestShoppingCart(user);
+        cart.setId(TEST_USER_ID_TWO);
+        return cart;
+    }
+
+    public static ShoppingCart createCartToModelForUser(User user) {
+        ShoppingCart caretToModel = new ShoppingCart();
+        caretToModel.setUser(user);
+        return caretToModel;
+    }
+
+    public static CartItem createCartItem(
+            Long id,
+            Long shoppingCartId,
+            Long bookId,
+            int quantity
+    ) {
+        CartItem cartItem = new CartItem();
+        cartItem.setId(id);
+        cartItem.setShoppingCart(initializeShoppingCart(shoppingCartId));
+        cartItem.setBook(initializeBook(bookId));
+        cartItem.setQuantity(quantity);
+        cartItem.setDeleted(false);
+        return cartItem;
+    }
+
+    public static User getTestUserFromDb(UserRepository userRepository, Long id) {
+        return userRepository.findById(id).orElseThrow(() ->
+                new EntityNotFoundException(USER_NOT_FOUND_MESSAGE + id));
+    }
+
+    public static Set<CartItem> getCartItemsByUserId(Long userId, List<CartItem> cartItems) {
+        return cartItems.stream()
+                .filter(isCartItemForTestUser(userId))
+                .collect(Collectors.toSet());
+    }
+
+    public static Predicate<CartItem> isCartItemForTestUser(Long userId) {
+        return cartItem -> userId.equals(cartItem.getShoppingCart().getId());
+    }
+
+    public static Set<CartItem> mapBookToCartItem(Set<CartItem> cartItems) {
+        return cartItems.stream()
+                .map(TestUtil::setDataBookByBookId)
+                .collect(Collectors.toSet());
+    }
+
+    public static CartItem setDataBookByBookId(CartItem cartItem) {
+        return loadAllBooks().stream()
+                .filter(book -> book.getId().equals(cartItem.getBook().getId()))
+                .findFirst()
+                .map(book -> {
+                    normalizeBookPrice(book);
+                    cartItem.setBook(book);
+                    return cartItem;
+                })
+                .orElseThrow(() -> new EntityNotFoundException("Book with ID "
+                        + cartItem.getBook().getId()
+                        + " not found"));
+    }
+
+    public static UpdateCartItemRequestDto createUpdateCartItemRequestDto(Integer quantity) {
+        UpdateCartItemRequestDto requestDto = new UpdateCartItemRequestDto();
+        requestDto.setQuantity(quantity);
+        return requestDto;
     }
 
     //========================methods for services======================================
@@ -494,12 +683,12 @@ public final class TestUtil {
         return category;
     }
 
+    //=============================================================================================
     private static Book createBook(
             Long id, String title, String author, String isbn, BigDecimal price,
             String description, String coverImage, Set<Category> categories
     ) {
-        Book book = new Book();
-        book.setId(id);
+        Book book = initializeBook(id);
         book.setTitle(title);
         book.setAuthor(author);
         book.setIsbn(isbn);
@@ -538,5 +727,21 @@ public final class TestUtil {
         Category category = new Category();
         category.setId(categoryId);
         return category;
+    }
+
+    private static Book initializeBook(Long bookId) {
+        Book book = new Book();
+        book.setId(bookId);
+        return book;
+    }
+
+    private static ShoppingCart initializeShoppingCart(Long shoppingCartId) {
+        ShoppingCart cart = new ShoppingCart();
+        cart.setId(shoppingCartId);
+        return cart;
+    }
+
+    private static void normalizeBookPrice(Book book) {
+        book.setPrice(book.getPrice().setScale(2, RoundingMode.HALF_UP));
     }
 }
