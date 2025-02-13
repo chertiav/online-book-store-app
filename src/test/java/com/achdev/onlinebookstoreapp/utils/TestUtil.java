@@ -1,16 +1,8 @@
 package com.achdev.onlinebookstoreapp.utils;
 
-import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED;
-import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE;
-import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SHOULD_NOT_BE_NULL;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.AUTHOR_SEARCH_PARAMETER;
-import static com.achdev.onlinebookstoreapp.utils.TestConstants.CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE;
-import static com.achdev.onlinebookstoreapp.utils.TestConstants.CURRENT_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE;
-import static com.achdev.onlinebookstoreapp.utils.TestConstants.DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ERROR_FIELD_TITLE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ERROR_MESSAGE_TITLE;
-import static com.achdev.onlinebookstoreapp.utils.TestConstants.ID_FIELD;
-import static com.achdev.onlinebookstoreapp.utils.TestConstants.PAGE_SIZE_DOES_NOT_MATCH_THE_EXPECTED_VALUE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SAMPLE_BOOK_AUTHOR;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SAMPLE_BOOK_COVER_IMAGE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SAMPLE_BOOK_DESCRIPTION;
@@ -28,15 +20,8 @@ import static com.achdev.onlinebookstoreapp.utils.TestConstants.TEST_USER_ID_TWO
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.TEST_USER_LAST_NAME;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.TEST_USER_PASSWORD;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.TEST_USER_SHIPPiNG_ADDRESS;
-import static com.achdev.onlinebookstoreapp.utils.TestConstants.TIMESTAMP_FIELD;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.TITLE_SEARCH_PARAMETER;
-import static com.achdev.onlinebookstoreapp.utils.TestConstants.TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE;
-import static com.achdev.onlinebookstoreapp.utils.TestConstants.TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.USER_NOT_FOUND_MESSAGE;
-import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.achdev.onlinebookstoreapp.dto.book.BookDto;
 import com.achdev.onlinebookstoreapp.dto.book.BookDtoWithoutCategoryIds;
@@ -70,7 +55,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -81,6 +65,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.util.LinkedMultiValueMap;
@@ -222,37 +207,18 @@ public final class TestUtil {
         );
     }
 
-    //========================methods for controllers======================================
-    public static <T> void verifyPageResponseMatch(
-            PageResponse<T> actual,
-            PageResponse<T> expected
+    public static boolean recordExistsInDatabase(
+            JdbcTemplate jdbcTemplate,
+            String tableName,
+            Long id
     ) {
-        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
-        assertEquals(expected.getContent(), actual.getContent(),
-                CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
-        assertEquals(
-                expected.getMetadata().getTotalElementCount(),
-                actual.getMetadata().getTotalElementCount(),
-                TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE);
-        assertEquals(
-                expected.getMetadata().getTotalPageCount(),
-                actual.getMetadata().getTotalPageCount(),
-                TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
-        assertEquals(
-                expected.getMetadata().getCurrentPage(),
-                actual.getMetadata().getCurrentPage(),
-                CURRENT_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
-        assertEquals(
-                expected.getMetadata().getPageSize(),
-                actual.getMetadata().getPageSize(),
-                PAGE_SIZE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        String query = String.format("SELECT COUNT(*) FROM %s WHERE id = ? AND is_deleted = false",
+                tableName);
+        Integer count = jdbcTemplate.queryForObject(query, Integer.class, id);
+        return count != null && count > 0;
     }
 
-    public static <T> void validateObjectDto(T expected, T actual) {
-        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
-        assertEquals(expected, actual, ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
-    }
-
+    //========================methods for controllers======================================
     public static Map<String, String> createErrorDetailMap(
             String errorFieldTitle,
             String errorMessageTitle
@@ -299,24 +265,6 @@ public final class TestUtil {
                 LocalDateTime.now(),
                 message
         );
-    }
-
-    public static void verifyErrorResponseEquality(
-            CommonApiErrorResponse actual,
-            CommonApiErrorResponse expected
-    ) {
-        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
-        assertTrue(reflectionEquals(expected, actual, TIMESTAMP_FIELD),
-                ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED);
-        assertEquals(expected.timestamp().toLocalDate(),
-                actual.timestamp().toLocalDate(),
-                DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH);
-    }
-
-    public static <T> void verifyResponseEqualityWithExpected(T expected, T actual) {
-        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
-        assertTrue(reflectionEquals(expected, actual, ID_FIELD),
-                ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
     }
 
     public static <T> PageResponse<T> createPageResponse(List<T> objectDtos) {
@@ -389,24 +337,6 @@ public final class TestUtil {
     }
 
     //========================methods for repositories======================================
-    public static <T> void verifyPageContent(Page<T> expected, Page<T> actual) {
-        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
-        assertEquals(
-                expected.getNumberOfElements(),
-                actual.getNumberOfElements(),
-                TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE);
-        assertEquals(
-                expected.getTotalPages(),
-                actual.getTotalPages(),
-                TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
-        assertEquals(
-                expected.getTotalElements(),
-                actual.getTotalElements(),
-                PAGE_SIZE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
-        assertEquals(expected.getContent(), actual.getContent(),
-                CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
-    }
-
     public static Book createSampleBook() {
         Book book = new Book();
         book.setTitle(SAMPLE_BOOK_TITLE);
@@ -467,17 +397,6 @@ public final class TestUtil {
         cartItemRequestDto.setBookId(SAMPLE_TEST_ID);
         cartItemRequestDto.setQuantity(1);
         return cartItemRequestDto;
-    }
-
-    public static void validateCartItemPresenceAndEquality(
-            CartItem expected,
-            Optional<CartItem> actual) {
-        assertTrue(actual.isPresent(), ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
-        assertEquals(expected, actual.get(), ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
-        assertEquals(
-                expected.getShoppingCart().getId(),
-                actual.get().getShoppingCart().getId(),
-                ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
     }
 
     public static CartItem createTestCartItem(

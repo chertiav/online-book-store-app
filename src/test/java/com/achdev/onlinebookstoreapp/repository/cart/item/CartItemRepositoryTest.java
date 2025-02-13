@@ -3,6 +3,7 @@ package com.achdev.onlinebookstoreapp.repository.cart.item;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SHOULD_NOT_BE_NULL;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.BOOK_QUANTITY;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.CART_ITEMS_TABLE_NAME;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ID_FIELD;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.INVALID_ID;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.NEW_CART_ITEM_ID;
@@ -14,8 +15,10 @@ import static com.achdev.onlinebookstoreapp.utils.TestUtil.executeSqlScripts;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.getDeleteCheckMessage;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.getNotFoundMessage;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.loadAllCartItems;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.recordExistsInDatabase;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.setDataBookByBookId;
-import static com.achdev.onlinebookstoreapp.utils.TestUtil.validateCartItemPresenceAndEquality;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.testcontainers.shaded.org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
@@ -41,6 +44,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 
 @DisplayName("CartItemRepositoryTest Integration Test")
@@ -52,6 +56,8 @@ class CartItemRepositoryTest {
     private static List<CartItem> cartItems;
     @Autowired
     private CartItemRepository cartItemRepository;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @BeforeAll
     static void setUp(@Autowired DataSource dataSource) {
@@ -110,7 +116,12 @@ class CartItemRepositoryTest {
                 .findCartItemByBookIdAndShoppingCartId(bookId, cartId);
 
         //Then
-        validateCartItemPresenceAndEquality(expected, actual);
+        assertTrue(actual.isPresent(), ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(expected, actual.get(), ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
+        assertEquals(
+                expected.getShoppingCart().getId(),
+                actual.get().getShoppingCart().getId(),
+                ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
     }
 
     @Order(2)
@@ -148,7 +159,12 @@ class CartItemRepositoryTest {
         Optional<CartItem> actual = cartItemRepository.findById(id);
 
         //Then
-        validateCartItemPresenceAndEquality(expected, actual);
+        assertTrue(actual.isPresent(), ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(expected, actual.get(), ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
+        assertEquals(
+                expected.getShoppingCart().getId(),
+                actual.get().getShoppingCart().getId(),
+                ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
     }
 
     @Order(3)
@@ -158,7 +174,8 @@ class CartItemRepositoryTest {
     @Test
     void deleteById_ValidId_ShouldDeleteCartItem() {
         //Given
-        Optional<CartItem> cartItemResultBefore = cartItemRepository.findById(VALID_CART_ITEM_ID);
+        boolean existsBefore = recordExistsInDatabase(jdbcTemplate,
+                CART_ITEMS_TABLE_NAME, VALID_CART_ITEM_ID);
 
         // When
         cartItemRepository.deleteById(VALID_CART_ITEM_ID);
@@ -166,8 +183,7 @@ class CartItemRepositoryTest {
         // Then
         Optional<CartItem> cartItemResultAfter = cartItemRepository.findById(VALID_CART_ITEM_ID);
 
-        assertTrue(cartItemResultBefore.isPresent(),
-                getDeleteCheckMessage(CART_ITEM, VALID_CART_ITEM_ID));
+        assertTrue(existsBefore, getDeleteCheckMessage(CART_ITEM, VALID_CART_ITEM_ID));
         assertTrue(cartItemResultAfter.isEmpty(),
                 getNotFoundMessage(CART_ITEM, VALID_CART_ITEM_ID));
     }
@@ -177,16 +193,17 @@ class CartItemRepositoryTest {
     @DisplayName("Should not delete cart item when invalid ID is provided")
     void deleteById_InvalidId_ShouldNotDeleteAnyCartItem() {
         // Given
-        Optional<CartItem> bookResultBefore = cartItemRepository.findById(INVALID_ID);
+        boolean existsBefore = recordExistsInDatabase(jdbcTemplate,
+                CART_ITEMS_TABLE_NAME, INVALID_ID);
 
         // When
         cartItemRepository.deleteById(INVALID_ID);
 
         // Then
-        Optional<CartItem> bookResultAfter = cartItemRepository.findById(INVALID_ID);
+        Optional<CartItem> cartItemResultAfter = cartItemRepository.findById(INVALID_ID);
 
-        assertTrue(bookResultBefore.isEmpty(), getNotFoundMessage(CART_ITEM, INVALID_ID));
-        assertTrue(bookResultAfter.isEmpty(), getNotFoundMessage(CART_ITEM, INVALID_ID));
+        assertFalse(existsBefore, getNotFoundMessage(CART_ITEM, INVALID_ID));
+        assertTrue(cartItemResultAfter.isEmpty(), getNotFoundMessage(CART_ITEM, INVALID_ID));
     }
 
     private static Stream<Arguments> provideBookIdAndCartIdData() {

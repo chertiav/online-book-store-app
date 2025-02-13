@@ -1,5 +1,8 @@
 package com.achdev.onlinebookstoreapp.service.impl;
 
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SHOULD_NOT_BE_NULL;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ERROR_MESSAGE_BOOK_NOT_FOUND;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.EXCEPTION_MESSAGE_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.FIRST_BOOK_AUTHOR;
@@ -7,7 +10,10 @@ import static com.achdev.onlinebookstoreapp.utils.TestConstants.FIRST_BOOK_TITLE
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.INITIAL_INDEX;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.INVALID_ID;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.NEW_BOOK_TITLE;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.PAGE_SIZE_DOES_NOT_MATCH_THE_EXPECTED_VALUE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SAMPLE_TEST_ID;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.bookFromRequestDto;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.createBookRequestDtoFromBook;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.createInvalidSearchParameters;
@@ -18,11 +24,10 @@ import static com.achdev.onlinebookstoreapp.utils.TestUtil.loadAllBooks;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.mapBookToBookDtoWithoutCategoryIds;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.mapBookToDto;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.scaleBookPrices;
-import static com.achdev.onlinebookstoreapp.utils.TestUtil.validateObjectDto;
-import static com.achdev.onlinebookstoreapp.utils.TestUtil.verifyPageContent;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
@@ -81,7 +86,6 @@ class BookServiceImplTest {
         Pageable pageable = PageRequest.of(0, 20);
 
         Page<Book> bookPage = createPage(List.of(book), pageable);
-        Page<BookDto> expected = createPage(List.of(bookDto), pageable);
 
         when(bookRepository.findAll(pageable)).thenReturn(bookPage);
         when(bookMapper.toDto(book)).thenReturn(bookDto);
@@ -90,7 +94,23 @@ class BookServiceImplTest {
         Page<BookDto> actual = bookService.findAll(pageable);
 
         //Then
-        verifyPageContent(expected, actual);
+        Page<BookDto> expected = createPage(List.of(bookDto), pageable);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(
+                expected.getNumberOfElements(),
+                actual.getNumberOfElements(),
+                TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalPages(),
+                actual.getTotalPages(),
+                TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalElements(),
+                actual.getTotalElements(),
+                PAGE_SIZE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(expected.getContent(), actual.getContent(),
+                CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
 
         verify(bookRepository).findAll(pageable);
         verify(bookMapper).toDto(book);
@@ -111,7 +131,21 @@ class BookServiceImplTest {
         Page<BookDto> actual = bookService.findAll(pageable);
 
         //Then
-        verifyPageContent(expected, actual);
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(
+                expected.getNumberOfElements(),
+                actual.getNumberOfElements(),
+                TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalPages(),
+                actual.getTotalPages(),
+                TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalElements(),
+                actual.getTotalElements(),
+                PAGE_SIZE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(expected.getContent(), actual.getContent(),
+                CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
 
         verify(bookRepository).findAll(pageable);
         verifyNoInteractions(bookMapper);
@@ -125,9 +159,7 @@ class BookServiceImplTest {
         Book book = books.get(INITIAL_INDEX);
         BookDtoWithoutCategoryIds bookDto = mapBookToBookDtoWithoutCategoryIds(book);
         Pageable pageable = PageRequest.of(0, 20);
-
         Page<Book> bookPage = createPage(List.of(book), pageable);
-        Page<BookDtoWithoutCategoryIds> expected = createPage(List.of(bookDto), pageable);
 
         when(bookRepository.findAllByCategories(categoryId, pageable)).thenReturn(bookPage);
         when(bookMapper.toDtoWithoutCategories(book)).thenReturn(bookDto);
@@ -137,7 +169,23 @@ class BookServiceImplTest {
                 .findAllByCategoryId(categoryId, pageable);
 
         //Then
-        verifyPageContent(expected, actual);
+        Page<BookDtoWithoutCategoryIds> expected = createPage(List.of(bookDto), pageable);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(
+                expected.getNumberOfElements(),
+                actual.getNumberOfElements(),
+                TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalPages(),
+                actual.getTotalPages(),
+                TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalElements(),
+                actual.getTotalElements(),
+                PAGE_SIZE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(expected.getContent(), actual.getContent(),
+                CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
 
         verify(bookRepository).findAllByCategories(categoryId, pageable);
         verify(bookMapper).toDtoWithoutCategories(book);
@@ -158,7 +206,8 @@ class BookServiceImplTest {
         BookDto actual = bookService.findById(book.getId());
 
         //Then
-        validateObjectDto(expected, actual);
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(expected, actual, ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
 
         verify(bookRepository).findById(book.getId());
         verify(bookMapper).toDto(book);
@@ -213,7 +262,22 @@ class BookServiceImplTest {
 
         //Then
         Page<BookDto> expected = createPage(List.of(bookDto), pageable);
-        verifyPageContent(expected, actual);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(
+                expected.getNumberOfElements(),
+                actual.getNumberOfElements(),
+                TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalPages(),
+                actual.getTotalPages(),
+                TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalElements(),
+                actual.getTotalElements(),
+                PAGE_SIZE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(expected.getContent(), actual.getContent(),
+                CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
 
         verify(bookSpecificationBuilder).build(searchParameters);
         verify(bookRepository).findAll(bookSpecification, pageable);
@@ -240,7 +304,8 @@ class BookServiceImplTest {
         BookDto actual = bookService.save(requestDto);
 
         //Then
-        validateObjectDto(expected, actual);
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(expected, actual, ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
 
         verify(bookMapper).toModel(requestDto);
         verify(bookRepository).save(bookModel);
@@ -271,7 +336,8 @@ class BookServiceImplTest {
         BookDto actual = bookService.updateById(book.getId(), requestDto);
 
         //Then
-        validateObjectDto(expected, actual);
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(expected, actual, ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
 
         verify(bookRepository).findById(book.getId());
         verify(bookMapper).updateBookFromDto(requestDto, book);

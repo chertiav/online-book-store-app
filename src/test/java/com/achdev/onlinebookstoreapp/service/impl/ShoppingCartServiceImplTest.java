@@ -1,6 +1,7 @@
 package com.achdev.onlinebookstoreapp.service.impl;
 
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SHOULD_NOT_BE_NULL;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.BOOK_QUANTITY;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ERROR_MESSAGE_BOOK_NOT_FOUND;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ERROR_MESSAGE_CART_ITEM_NOT_FOUND;
@@ -22,10 +23,10 @@ import static com.achdev.onlinebookstoreapp.utils.TestUtil.initializeTestShoppin
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.loadAllBooks;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.mapBookToDto;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.mapShoppingCartToDto;
-import static com.achdev.onlinebookstoreapp.utils.TestUtil.validateObjectDto;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
@@ -168,7 +169,8 @@ class ShoppingCartServiceImplTest {
         //Then
         ShoppingCartDto expected = mapShoppingCartToDto(cart);
 
-        validateObjectDto(expected, actual);
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(expected, actual, ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
         verify(bookService).findById(requestDto.getBookId());
         verify(shoppingCartsRepository).findByUserEmail(user.getEmail());
         verify(cartItemRepository).findCartItemByBookIdAndShoppingCartId(
@@ -248,7 +250,8 @@ class ShoppingCartServiceImplTest {
         ShoppingCart actual = shoppingCartService.getShoppingCartByUserEmail(user.getEmail());
 
         //Then
-        validateObjectDto(expected, actual);
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(expected, actual, ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
         verify(shoppingCartsRepository).findByUserEmail(user.getEmail());
         verifyNoMoreInteractions(shoppingCartsRepository);
     }
@@ -327,7 +330,8 @@ class ShoppingCartServiceImplTest {
                 .updateCartItem(cartItem.getId(), requestDto);
 
         //Then
-        validateObjectDto(expected, actual);
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(expected, actual, ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
         verify(cartItemRepository).findById(cartItem.getId());
         verify(cartItemMapper).updateCartItemQuantity(requestDto, cartItem);
         verify(cartItemRepository).save(cartItem);

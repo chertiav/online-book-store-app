@@ -48,7 +48,7 @@ public final class TestConstants {
     public static final long SAMPLE_TEST_ID = 1L;
     public static final int INITIAL_INDEX = 0;
     public static final int EIGHTH_BOOK_INDEX = 8;
-    public static final long VALID_CART_ITEM_ID = 10L;
+    public static final long VALID_CART_ITEM_ID = 2L;
     public static final long NEW_CART_ITEM_ID = 9L;
     public static final long USER_ID_TWO_SHOPPING_CART_ID = 2L;
     public static final long SAMPLE_BOOK_ID = 8L;
@@ -100,6 +100,10 @@ public final class TestConstants {
     public static final String AUTHOR_SEARCH_PARAMETER = "authors";
     public static final String SEARCH_KEY_TITLE = "title";
     public static final String SEARCH_KEY_AUTHOR = "author";
+    //========================names of tables================================
+    public static final String CART_ITEMS_TABLE_NAME = "cart_items";
+    public static final String BOOKS_TABLE_NAME = "books";
+    public static final String CATEGORIES_TABLE_NAME = "categories";
 
     private TestConstants() {
     }

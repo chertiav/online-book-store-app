@@ -2,17 +2,23 @@ package com.achdev.onlinebookstoreapp.repository.category;
 
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SHOULD_NOT_BE_NULL;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.CATEGORIES_TABLE_NAME;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ID_FIELD;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.INITIAL_INDEX;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.INVALID_ID;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.PAGE_SIZE_DOES_NOT_MATCH_THE_EXPECTED_VALUE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SAMPLE_TEST_ID;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.createSampleCategory;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.executeSqlScripts;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.getDeleteCheckMessage;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.getNotFoundMessage;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.loadAllCategories;
-import static com.achdev.onlinebookstoreapp.utils.TestUtil.verifyPageContent;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.recordExistsInDatabase;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.testcontainers.shaded.org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
@@ -37,6 +43,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @DisplayName("CategoryRepository Integration Test")
 @DataJpaTest
@@ -48,6 +55,8 @@ public class CategoryRepositoryTest {
     private static List<Category> categories;
     @Autowired
     private CategoryRepository categoryRepository;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @BeforeAll
     static void setUp(@Autowired DataSource dataSource) {
@@ -94,7 +103,21 @@ public class CategoryRepositoryTest {
         Page<Category> actual = categoryRepository.findAll(pageable);
 
         //Then
-        verifyPageContent(actual, expected);
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(
+                expected.getNumberOfElements(),
+                actual.getNumberOfElements(),
+                TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalPages(),
+                actual.getTotalPages(),
+                TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalElements(),
+                actual.getTotalElements(),
+                PAGE_SIZE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(expected.getContent(), actual.getContent(),
+                CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
     }
 
     @Order(2)
@@ -110,7 +133,21 @@ public class CategoryRepositoryTest {
         Page<Category> actual = categoryRepository.findAll(pageable);
 
         // Then
-        verifyPageContent(actual, expected);
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(
+                expected.getNumberOfElements(),
+                actual.getNumberOfElements(),
+                TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalPages(),
+                actual.getTotalPages(),
+                TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalElements(),
+                actual.getTotalElements(),
+                PAGE_SIZE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(expected.getContent(), actual.getContent(),
+                CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
     }
 
     @Order(3)
@@ -153,7 +190,8 @@ public class CategoryRepositoryTest {
     @DisplayName("Delete category successfully when valid ID is provided")
     void deleteById_ValidId_ShouldDeleteCategory() {
         //Given
-        Optional<Category> categoryResultBefore = categoryRepository.findById(SAMPLE_TEST_ID);
+        boolean existsBefore = recordExistsInDatabase(jdbcTemplate,
+                CATEGORIES_TABLE_NAME, SAMPLE_TEST_ID);
 
         // When
         categoryRepository.deleteById(SAMPLE_TEST_ID);
@@ -161,8 +199,7 @@ public class CategoryRepositoryTest {
         // Then
         Optional<Category> categoryResultAfter = categoryRepository.findById(SAMPLE_TEST_ID);
 
-        assertTrue(categoryResultBefore.isPresent(),
-                getDeleteCheckMessage(CATEGORY, SAMPLE_TEST_ID));
+        assertTrue(existsBefore, getDeleteCheckMessage(CATEGORY, SAMPLE_TEST_ID));
         assertTrue(categoryResultAfter.isEmpty(), getNotFoundMessage(CATEGORY, SAMPLE_TEST_ID));
     }
 
@@ -171,7 +208,8 @@ public class CategoryRepositoryTest {
     @DisplayName("Should not category when invalid ID is provided")
     void deleteById_InvalidId_ShouldNotDeleteAnyCategory() {
         //Given
-        Optional<Category> categoryResultBefore = categoryRepository.findById(INVALID_ID);
+        boolean existsBefore = recordExistsInDatabase(jdbcTemplate,
+                CATEGORIES_TABLE_NAME, INVALID_ID);
 
         // When
         categoryRepository.deleteById(INVALID_ID);
@@ -179,7 +217,7 @@ public class CategoryRepositoryTest {
         // Then
         Optional<Category> categoryResultAfter = categoryRepository.findById(INVALID_ID);
 
-        assertTrue(categoryResultBefore.isEmpty(), getNotFoundMessage(CATEGORY, INVALID_ID));
+        assertFalse(existsBefore, getNotFoundMessage(CATEGORY, INVALID_ID));
         assertTrue(categoryResultAfter.isEmpty(), getNotFoundMessage(CATEGORY, INVALID_ID));
     }
 }

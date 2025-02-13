@@ -1,8 +1,12 @@
 package com.achdev.onlinebookstoreapp.controller;
 
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACCESS_DENIED;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SHOULD_NOT_BE_NULL;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.BOOK_QUANTITY;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.CARTS_ENDPOINT;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.EIGHTH_BOOK_INDEX;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ERROR_FIELD_BOOK_ID_VALUE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ERROR_FIELD_QUANTITY;
@@ -19,6 +23,7 @@ import static com.achdev.onlinebookstoreapp.utils.TestConstants.PATH_SEPARATOR;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SAMPLE_TEST_ID;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.TEST_USER_ID_TWO;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.TEST_USER_ID_TWO_EMAIL;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.TIMESTAMP_FIELD;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.UPDATED_BOOK_QUANTITY;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.createCartItemRequestDto;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.createCartItemResponseDto;
@@ -34,9 +39,11 @@ import static com.achdev.onlinebookstoreapp.utils.TestUtil.mapBookToCartItem;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.mapMvcResultToObjectDto;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.parseErrorResponseFromMvcResult;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.setDataBookByBookId;
-import static com.achdev.onlinebookstoreapp.utils.TestUtil.validateObjectDto;
-import static com.achdev.onlinebookstoreapp.utils.TestUtil.verifyErrorResponseEquality;
+import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -161,7 +168,9 @@ class ShoppingCartControllerTest {
         //Then
         ShoppingCartDto actual = mapMvcResultToObjectDto(result, objectMapper,
                 ShoppingCartDto.class);
-        validateObjectDto(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(expected, actual, ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
     }
 
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -180,7 +189,13 @@ class ShoppingCartControllerTest {
 
         //Then
         CommonApiErrorResponse actual = parseErrorResponseFromMvcResult(result, objectMapper);
-        verifyErrorResponseEquality(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertTrue(reflectionEquals(expected, actual, TIMESTAMP_FIELD),
+                ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED);
+        assertEquals(expected.timestamp().toLocalDate(),
+                actual.timestamp().toLocalDate(),
+                DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH);
     }
 
     @WithUserDetails(TEST_USER_ID_TWO_EMAIL)
@@ -217,7 +232,8 @@ class ShoppingCartControllerTest {
                 ShoppingCartDto.class);
         actual.getCartItems().sort(Comparator.comparing(CartItemResponseDto::id));
 
-        validateObjectDto(expected, actual);
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(expected, actual, ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
     }
 
     @WithUserDetails(TEST_USER_ID_TWO_EMAIL)
@@ -248,7 +264,13 @@ class ShoppingCartControllerTest {
 
         //Then
         CommonApiErrorResponse actual = parseErrorResponseFromMvcResult(result, objectMapper);
-        verifyErrorResponseEquality(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertTrue(reflectionEquals(expected, actual, TIMESTAMP_FIELD),
+                ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED);
+        assertEquals(expected.timestamp().toLocalDate(),
+                actual.timestamp().toLocalDate(),
+                DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH);
     }
 
     @WithUserDetails(TEST_USER_ID_TWO_EMAIL)
@@ -273,7 +295,13 @@ class ShoppingCartControllerTest {
 
         //Then
         CommonApiErrorResponse actual = parseErrorResponseFromMvcResult(result, objectMapper);
-        verifyErrorResponseEquality(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertTrue(reflectionEquals(expected, actual, TIMESTAMP_FIELD),
+                ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED);
+        assertEquals(expected.timestamp().toLocalDate(),
+                actual.timestamp().toLocalDate(),
+                DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH);
     }
 
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -297,7 +325,13 @@ class ShoppingCartControllerTest {
 
         //Then
         CommonApiErrorResponse actual = parseErrorResponseFromMvcResult(result, objectMapper);
-        verifyErrorResponseEquality(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertTrue(reflectionEquals(expected, actual, TIMESTAMP_FIELD),
+                ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED);
+        assertEquals(expected.timestamp().toLocalDate(),
+                actual.timestamp().toLocalDate(),
+                DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH);
     }
 
     @WithUserDetails(TEST_USER_ID_TWO_EMAIL)
@@ -327,7 +361,8 @@ class ShoppingCartControllerTest {
         CartItemResponseDto actual = mapMvcResultToObjectDto(result, objectMapper,
                 CartItemResponseDto.class);
 
-        validateObjectDto(expected, actual);
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(expected, actual, ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
     }
 
     @WithUserDetails(TEST_USER_ID_TWO_EMAIL)
@@ -360,7 +395,13 @@ class ShoppingCartControllerTest {
 
         //Then
         CommonApiErrorResponse actual = parseErrorResponseFromMvcResult(result, objectMapper);
-        verifyErrorResponseEquality(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertTrue(reflectionEquals(expected, actual, TIMESTAMP_FIELD),
+                ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED);
+        assertEquals(expected.timestamp().toLocalDate(),
+                actual.timestamp().toLocalDate(),
+                DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH);
     }
 
     @WithUserDetails(TEST_USER_ID_TWO_EMAIL)
@@ -385,7 +426,13 @@ class ShoppingCartControllerTest {
 
         //Then
         CommonApiErrorResponse actual = parseErrorResponseFromMvcResult(result, objectMapper);
-        verifyErrorResponseEquality(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertTrue(reflectionEquals(expected, actual, TIMESTAMP_FIELD),
+                ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED);
+        assertEquals(expected.timestamp().toLocalDate(),
+                actual.timestamp().toLocalDate(),
+                DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH);
     }
 
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -410,7 +457,13 @@ class ShoppingCartControllerTest {
 
         //Then
         CommonApiErrorResponse actual = parseErrorResponseFromMvcResult(result, objectMapper);
-        verifyErrorResponseEquality(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertTrue(reflectionEquals(expected, actual, TIMESTAMP_FIELD),
+                ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED);
+        assertEquals(expected.timestamp().toLocalDate(),
+                actual.timestamp().toLocalDate(),
+                DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH);
     }
 
     @WithMockUser(TEST_USER_ID_TWO_EMAIL)
@@ -449,6 +502,12 @@ class ShoppingCartControllerTest {
 
         //Then
         CommonApiErrorResponse actual = parseErrorResponseFromMvcResult(result, objectMapper);
-        verifyErrorResponseEquality(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertTrue(reflectionEquals(expected, actual, TIMESTAMP_FIELD),
+                ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED);
+        assertEquals(expected.timestamp().toLocalDate(),
+                actual.timestamp().toLocalDate(),
+                DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH);
     }
 }

@@ -2,6 +2,8 @@ package com.achdev.onlinebookstoreapp.repository.book;
 
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SHOULD_NOT_BE_NULL;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.BOOKS_TABLE_NAME;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.EIGHTH_BOOK_INDEX;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.FIRST_BOOK_AUTHOR;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.FIRST_BOOK_TITLE;
@@ -10,18 +12,23 @@ import static com.achdev.onlinebookstoreapp.utils.TestConstants.INITIAL_INDEX;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.INVALID_AUTHOR;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.INVALID_ID;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.INVALID_TITLE;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.PAGE_SIZE_DOES_NOT_MATCH_THE_EXPECTED_VALUE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SAMPLE_TEST_ID;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SEARCH_KEY_AUTHOR;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SEARCH_KEY_TITLE;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.VALID_CART_ITEM_ID;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.createEqualSpecification;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.createSampleBook;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.executeSqlScripts;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.getDeleteCheckMessage;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.getNotFoundMessage;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.loadAllBooks;
+import static com.achdev.onlinebookstoreapp.utils.TestUtil.recordExistsInDatabase;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.scaleBookPrices;
-import static com.achdev.onlinebookstoreapp.utils.TestUtil.verifyPageContent;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.testcontainers.shaded.org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
@@ -51,6 +58,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @DisplayName("BookRepository Integration Test")
 @DataJpaTest
@@ -62,6 +70,8 @@ class BookRepositoryTest {
     private static List<Book> books;
     @Autowired
     private BookRepository bookRepository;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @BeforeAll
     static void setUp(@Autowired DataSource dataSource) {
@@ -111,7 +121,21 @@ class BookRepositoryTest {
         Page<Book> actual = bookRepository.findAll(pageable);
 
         //Then
-        verifyPageContent(actual, expected);
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(
+                expected.getNumberOfElements(),
+                actual.getNumberOfElements(),
+                TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalPages(),
+                actual.getTotalPages(),
+                TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalElements(),
+                actual.getTotalElements(),
+                PAGE_SIZE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(expected.getContent(), actual.getContent(),
+                CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
     }
 
     @Order(2)
@@ -127,7 +151,21 @@ class BookRepositoryTest {
         Page<Book> actual = bookRepository.findAll(pageable);
 
         // Then
-        verifyPageContent(actual, expected);
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(
+                expected.getNumberOfElements(),
+                actual.getNumberOfElements(),
+                TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalPages(),
+                actual.getTotalPages(),
+                TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalElements(),
+                actual.getTotalElements(),
+                PAGE_SIZE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(expected.getContent(), actual.getContent(),
+                CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
     }
 
     @Order(3)
@@ -147,7 +185,21 @@ class BookRepositoryTest {
         Page<Book> actual = bookRepository.findAllByCategories(categoryId, pageable);
 
         //Then
-        verifyPageContent(actual, expected);
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(
+                expected.getNumberOfElements(),
+                actual.getNumberOfElements(),
+                TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalPages(),
+                actual.getTotalPages(),
+                TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalElements(),
+                actual.getTotalElements(),
+                PAGE_SIZE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(expected.getContent(), actual.getContent(),
+                CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
     }
 
     @Order(4)
@@ -181,7 +233,21 @@ class BookRepositoryTest {
         Page<Book> actual = bookRepository.findAll(specification, pageable);
 
         //Then
-        verifyPageContent(actual, expected);
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(
+                expected.getNumberOfElements(),
+                actual.getNumberOfElements(),
+                TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalPages(),
+                actual.getTotalPages(),
+                TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalElements(),
+                actual.getTotalElements(),
+                PAGE_SIZE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(expected.getContent(), actual.getContent(),
+                CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
     }
 
     @Order(6)
@@ -199,7 +265,21 @@ class BookRepositoryTest {
         Page<Book> actual = bookRepository.findAll(specification, pageable);
 
         // Then
-        verifyPageContent(actual, expected);
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(
+                expected.getNumberOfElements(),
+                actual.getNumberOfElements(),
+                TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalPages(),
+                actual.getTotalPages(),
+                TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getTotalElements(),
+                actual.getTotalElements(),
+                PAGE_SIZE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(expected.getContent(), actual.getContent(),
+                CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
     }
 
     @Order(7)
@@ -227,7 +307,8 @@ class BookRepositoryTest {
     @DisplayName("Delete book successfully when valid ID is provided")
     void deleteById_ValidId_ShouldDeleteBook() {
         //Given
-        Optional<Book> bookResultBefore = bookRepository.findById(SAMPLE_TEST_ID);
+        boolean existsBefore = recordExistsInDatabase(jdbcTemplate,
+                BOOKS_TABLE_NAME, VALID_CART_ITEM_ID);
 
         // When
         bookRepository.deleteById(SAMPLE_TEST_ID);
@@ -235,7 +316,7 @@ class BookRepositoryTest {
         // Then
         Optional<Book> bookResultAfter = bookRepository.findById(SAMPLE_TEST_ID);
 
-        assertTrue(bookResultBefore.isPresent(), getDeleteCheckMessage(BOOK, SAMPLE_TEST_ID));
+        assertTrue(existsBefore, getDeleteCheckMessage(BOOK, SAMPLE_TEST_ID));
         assertTrue(bookResultAfter.isEmpty(), getNotFoundMessage(BOOK, SAMPLE_TEST_ID));
     }
 
@@ -244,7 +325,8 @@ class BookRepositoryTest {
     @DisplayName("Should not delete book when invalid ID is provided")
     void deleteById_InvalidId_ShouldNotDeleteAnyBook() {
         // Given
-        Optional<Book> bookResultBefore = bookRepository.findById(INVALID_ID);
+        boolean existsBefore = recordExistsInDatabase(jdbcTemplate,
+                BOOKS_TABLE_NAME, INVALID_ID);
 
         // When
         bookRepository.deleteById(INVALID_ID);
@@ -252,7 +334,7 @@ class BookRepositoryTest {
         // Then
         Optional<Book> bookResultAfter = bookRepository.findById(INVALID_ID);
 
-        assertTrue(bookResultBefore.isEmpty(), getNotFoundMessage(BOOK, INVALID_ID));
+        assertFalse(existsBefore, getNotFoundMessage(BOOK, INVALID_ID));
         assertTrue(bookResultAfter.isEmpty(), getNotFoundMessage(BOOK, INVALID_ID));
     }
 
