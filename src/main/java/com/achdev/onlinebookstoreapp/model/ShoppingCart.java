@@ -12,6 +12,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.HashSet;
 import java.util.Set;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
@@ -22,6 +23,7 @@ import org.hibernate.annotations.SQLRestriction;
 @SQLDelete(sql = "UPDATE shopping_cart SET is_deleted = true WHERE id = ?")
 @SQLRestriction("is_deleted = false")
 @Entity
+@EqualsAndHashCode
 @Table(name = "shopping_carts")
 public class ShoppingCart {
     @Id
@@ -32,6 +34,7 @@ public class ShoppingCart {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
+    @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "shoppingCart", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CartItem> cartItems = new HashSet<>();
 

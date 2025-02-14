@@ -1,14 +1,21 @@
 package com.achdev.onlinebookstoreapp.controller;
 
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACCESS_DENIED;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.ACTUAL_RESULT_SHOULD_NOT_BE_NULL;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.BOOKS_ENDPOINT;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.CAN_T_UPDATE_BOOK_BY_ID;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.CURRENT_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.EMPTY_VALUE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ERROR_FIELD_TITLE_VALUE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ERROR_MESSAGE_BOOK_NOT_FOUND;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ERROR_MESSAGE_TITLE_MANDATORY;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.FIRST_BOOK_AUTHOR;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.FIRST_BOOK_TITLE;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.ID_FIELD;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.ID_SHOULD_NOT_BE_NULL;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.INITIAL_INDEX;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.INVALID_AUTHOR;
@@ -16,8 +23,12 @@ import static com.achdev.onlinebookstoreapp.utils.TestConstants.INVALID_ID;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.INVALID_TITLE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.NEW_BOOK_TITLE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.OBJECT_SHOULD_NO_LONGER_EXIST_AFTER_DELETION;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.PAGE_SIZE_DOES_NOT_MATCH_THE_EXPECTED_VALUE;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.PATH_SEPARATOR;
 import static com.achdev.onlinebookstoreapp.utils.TestConstants.SEARCH_ENDPOINT;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.TIMESTAMP_FIELD;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE;
+import static com.achdev.onlinebookstoreapp.utils.TestConstants.TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.createBookDtoFromRequest;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.createBookRequestDtoFromBook;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.createErrorDetailMap;
@@ -32,12 +43,11 @@ import static com.achdev.onlinebookstoreapp.utils.TestUtil.mapMvcResultToObjectD
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.parseErrorResponseFromMvcResult;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.parseObjectDtoPageResponse;
 import static com.achdev.onlinebookstoreapp.utils.TestUtil.scaleBookPrices;
-import static com.achdev.onlinebookstoreapp.utils.TestUtil.validateObjectDto;
-import static com.achdev.onlinebookstoreapp.utils.TestUtil.verifyErrorResponseEquality;
-import static com.achdev.onlinebookstoreapp.utils.TestUtil.verifyPageResponseMatch;
-import static com.achdev.onlinebookstoreapp.utils.TestUtil.verifyResponseEqualityWithExpected;
+import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -113,7 +123,7 @@ class BookControllerTest {
             executeSqlScripts(connection,
                     "database/books/add-books-to-books-table.sql",
                     "database/category/add-categories-to-categories-table.sql",
-                    "database/books/categories/add-books_categories-to_books_categories-table.sql"
+                    "database/books/categories/add-all-to_books_categories-table.sql"
             );
         }
     }
@@ -153,7 +163,26 @@ class BookControllerTest {
                 objectMapper,
                 BookDto.class
         );
-        verifyPageResponseMatch(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(expected.getContent(), actual.getContent(),
+                CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getMetadata().getTotalElementCount(),
+                actual.getMetadata().getTotalElementCount(),
+                TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getMetadata().getTotalPageCount(),
+                actual.getMetadata().getTotalPageCount(),
+                TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getMetadata().getCurrentPage(),
+                actual.getMetadata().getCurrentPage(),
+                CURRENT_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getMetadata().getPageSize(),
+                actual.getMetadata().getPageSize(),
+                PAGE_SIZE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
     }
 
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -172,7 +201,13 @@ class BookControllerTest {
 
         //Then
         CommonApiErrorResponse actual = parseErrorResponseFromMvcResult(result, objectMapper);
-        verifyErrorResponseEquality(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertTrue(reflectionEquals(expected, actual, TIMESTAMP_FIELD),
+                ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED);
+        assertEquals(expected.timestamp().toLocalDate(),
+                actual.timestamp().toLocalDate(),
+                DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH);
     }
 
     @WithMockUser(username = "user")
@@ -195,7 +230,9 @@ class BookControllerTest {
         BookDto actual = objectMapper.readValue(
                 result.getResponse().getContentAsByteArray(),
                 BookDto.class);
-        validateObjectDto(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(expected, actual, ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
     }
 
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -216,7 +253,13 @@ class BookControllerTest {
 
         //Then
         CommonApiErrorResponse actual = parseErrorResponseFromMvcResult(result, objectMapper);
-        verifyErrorResponseEquality(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertTrue(reflectionEquals(expected, actual, TIMESTAMP_FIELD),
+                ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED);
+        assertEquals(expected.timestamp().toLocalDate(),
+                actual.timestamp().toLocalDate(),
+                DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH);
     }
 
     @WithMockUser(username = "user")
@@ -237,7 +280,13 @@ class BookControllerTest {
 
         //Then
         CommonApiErrorResponse actual = parseErrorResponseFromMvcResult(result, objectMapper);
-        verifyErrorResponseEquality(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertTrue(reflectionEquals(expected, actual, TIMESTAMP_FIELD),
+                ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED);
+        assertEquals(expected.timestamp().toLocalDate(),
+                actual.timestamp().toLocalDate(),
+                DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH);
     }
 
     @WithMockUser(username = "user")
@@ -267,7 +316,26 @@ class BookControllerTest {
                 objectMapper,
                 BookDto.class
         );
-        verifyPageResponseMatch(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(expected.getContent(), actual.getContent(),
+                CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getMetadata().getTotalElementCount(),
+                actual.getMetadata().getTotalElementCount(),
+                TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getMetadata().getTotalPageCount(),
+                actual.getMetadata().getTotalPageCount(),
+                TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getMetadata().getCurrentPage(),
+                actual.getMetadata().getCurrentPage(),
+                CURRENT_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getMetadata().getPageSize(),
+                actual.getMetadata().getPageSize(),
+                PAGE_SIZE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
     }
 
     @WithMockUser(username = "user")
@@ -294,7 +362,26 @@ class BookControllerTest {
                 objectMapper,
                 BookDto.class
         );
-        verifyPageResponseMatch(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(expected.getContent(), actual.getContent(),
+                CONTENT_OF_THE_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getMetadata().getTotalElementCount(),
+                actual.getMetadata().getTotalElementCount(),
+                TOTAL_ELEMENTS_IN_THE_PAGE_DO_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getMetadata().getTotalPageCount(),
+                actual.getMetadata().getTotalPageCount(),
+                TOTAL_NUMBER_OF_PAGES_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getMetadata().getCurrentPage(),
+                actual.getMetadata().getCurrentPage(),
+                CURRENT_PAGE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
+        assertEquals(
+                expected.getMetadata().getPageSize(),
+                actual.getMetadata().getPageSize(),
+                PAGE_SIZE_DOES_NOT_MATCH_THE_EXPECTED_VALUE);
     }
 
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -319,7 +406,13 @@ class BookControllerTest {
 
         //Then
         CommonApiErrorResponse actual = parseErrorResponseFromMvcResult(result, objectMapper);
-        verifyErrorResponseEquality(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertTrue(reflectionEquals(expected, actual, TIMESTAMP_FIELD),
+                ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED);
+        assertEquals(expected.timestamp().toLocalDate(),
+                actual.timestamp().toLocalDate(),
+                DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH);
     }
 
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -341,7 +434,10 @@ class BookControllerTest {
 
         //Then
         BookDto actual = mapMvcResultToObjectDto(result, objectMapper, BookDto.class);
-        verifyResponseEqualityWithExpected(expected, actual);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertTrue(reflectionEquals(expected, actual, ID_FIELD),
+                ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
         assertNotNull(actual.getId(), ID_SHOULD_NOT_BE_NULL);
     }
 
@@ -374,7 +470,13 @@ class BookControllerTest {
 
         //Then
         CommonApiErrorResponse actual = parseErrorResponseFromMvcResult(result, objectMapper);
-        verifyErrorResponseEquality(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertTrue(reflectionEquals(expected, actual, TIMESTAMP_FIELD),
+                ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED);
+        assertEquals(expected.timestamp().toLocalDate(),
+                actual.timestamp().toLocalDate(),
+                DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH);
     }
 
     @WithMockUser(username = "user")
@@ -396,7 +498,13 @@ class BookControllerTest {
 
         //Then
         CommonApiErrorResponse actual = parseErrorResponseFromMvcResult(result, objectMapper);
-        verifyErrorResponseEquality(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertTrue(reflectionEquals(expected, actual, TIMESTAMP_FIELD),
+                ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED);
+        assertEquals(expected.timestamp().toLocalDate(),
+                actual.timestamp().toLocalDate(),
+                DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH);
     }
 
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -422,7 +530,9 @@ class BookControllerTest {
 
         //Then
         BookDto actual = mapMvcResultToObjectDto(result, objectMapper, BookDto.class);
-        validateObjectDto(actual, actual);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertEquals(expected, actual, ACTUAL_RESULT_SHOULD_BE_EQUAL_TO_THE_EXPECTED_ONE);
     }
 
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -454,7 +564,13 @@ class BookControllerTest {
 
         //Then
         CommonApiErrorResponse actual = parseErrorResponseFromMvcResult(result, objectMapper);
-        verifyErrorResponseEquality(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertTrue(reflectionEquals(expected, actual, TIMESTAMP_FIELD),
+                ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED);
+        assertEquals(expected.timestamp().toLocalDate(),
+                actual.timestamp().toLocalDate(),
+                DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH);
     }
 
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -478,7 +594,13 @@ class BookControllerTest {
 
         //Then
         CommonApiErrorResponse actual = parseErrorResponseFromMvcResult(result, objectMapper);
-        verifyErrorResponseEquality(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertTrue(reflectionEquals(expected, actual, TIMESTAMP_FIELD),
+                ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED);
+        assertEquals(expected.timestamp().toLocalDate(),
+                actual.timestamp().toLocalDate(),
+                DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH);
     }
 
     @WithMockUser(username = "user")
@@ -502,7 +624,13 @@ class BookControllerTest {
 
         //Then
         CommonApiErrorResponse actual = parseErrorResponseFromMvcResult(result, objectMapper);
-        verifyErrorResponseEquality(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertTrue(reflectionEquals(expected, actual, TIMESTAMP_FIELD),
+                ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED);
+        assertEquals(expected.timestamp().toLocalDate(),
+                actual.timestamp().toLocalDate(),
+                DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH);
     }
 
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -542,6 +670,12 @@ class BookControllerTest {
 
         //Then
         CommonApiErrorResponse actual = parseErrorResponseFromMvcResult(result, objectMapper);
-        verifyErrorResponseEquality(actual, expected);
+
+        assertNotNull(actual, ACTUAL_RESULT_SHOULD_NOT_BE_NULL);
+        assertTrue(reflectionEquals(expected, actual, TIMESTAMP_FIELD),
+                ACTUAL_OBJECT_DOES_NOT_MATCH_THE_EXPECTED);
+        assertEquals(expected.timestamp().toLocalDate(),
+                actual.timestamp().toLocalDate(),
+                DATE_PART_OF_THE_TIMESTAMP_DOES_NOT_MATCH);
     }
 }
