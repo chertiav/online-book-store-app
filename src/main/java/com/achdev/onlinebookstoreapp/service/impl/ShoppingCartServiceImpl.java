@@ -67,6 +67,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         shoppingCartsRepository.save(shoppingCart);
     }
 
+    @Transactional
     @Override
     public CartItemResponseDto updateCartItem(
             Long cartItemId,
