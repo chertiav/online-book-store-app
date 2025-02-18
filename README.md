@@ -25,20 +25,20 @@ The application includes user authentication, API documentation, database integr
 This project leverages the following technologies and tools
 
 - **Java 17**: The core programming language.
-- **Spring Framework**:
+- **Spring Framework** (v3.4.1):
     - Spring Boot
     - Spring Data JPA
     - Spring Security
     - Spring MVC
 - **Database**:
-    - MySQL Connector (JDBC)
-    - Liquibase (Database migration tool)
+    - MySQL Connector (JDBC): v9.0.0
+    - Liquibase (Database migration tool): v4.29.2
 - **API Documentation**:
-    - SpringDoc OpenAPI & Swagger UI
-- **JWT**: JSON Web Tokens for authentication.
-- **Lombok**: Simplified Java development with reduced boilerplate.
-- **MapStruct**: For converting entities to DTOs and vice versa.
-- **Docker Compose**: For containerized and simplified deployment.
+    - SpringDoc OpenAPI & Swagger UI: v2.7.0
+- **JWT (io.jsonwebtoken)**: v0.12.6. JSON Web Tokens for authentication.
+- **Lombok**: v1.18.36. Simplified Java development with reduced boilerplate.
+- **MapStruct**: v1.5.5.Final. For converting entities to DTOs and vice versa.
+- **Docker Compose**: v3.4.1. For containerized and simplified deployment.
 - Additional tools like Maven for builds and Git for version control.
 
 ---
@@ -211,50 +211,12 @@ Make sure to save the `.env` file and avoid committing it to version control to 
 ```
 4. Similarly, the Swagger documentation inside the container will be available at:
 ``` 
-    http://localhost:8080/api/swagger-ui.html
+    http://localhost:8080/api/swagger-ui/index.html
 ```
 
 ### Note:
 - The separation of ports (`SPRING_LOCAL_PORT` and `SPRING_DOCKER_PORT`) allows you to work locally on one port and expose another port for Docker containers.
 - Ensure you are accessing the correct port depending on your working environment.
-
----
-
-## 🔄 Managing the Application
-
-### Build Containers
-Build the Docker containers if there are changes in the application or its dependencies:
-
-```shell script
-  docker compose build
-```
-
-### Run In Detached Mode
-Run the application in the background:
-
-```shell script
-  docker compose up -d
-```
-
-### Stop the Containers
-Stop all running containers:
-
-```shell script
-  docker compose down
-```
-
-### Clean Up
-If you want to clear all containers and volumes, use:
-
-```shell script
-  docker compose down --volumes
-```
-
-### Stop Running Containers Without Removing Them
-If you only want to stop the running containers but keep them without removing resources, you can use:
-```shell script
-  docker compose stop
-```
 
 ---
 
@@ -280,31 +242,32 @@ You can find a Postman collection in `docs/online-book-store-app-api.postman_col
 
 ---
 
-## 📊 Architecture Diagram
+## 📊 Entity Relationships
 
-Below is a system overview of the application and its setup with Docker Compose:
+![online_book_uml.png](assets/online_book_uml.png)
 
-```
-+-------------------+
-|  REST API Client  |
-+-------------------+
-        |
-        ↓
-+------------------------+
-|    Spring Boot App     |
-|                        |
-| - Controllers          |
-| - Services             |
-| - Repositories         |
-+------------------------+
-        |
-        ↓
-+------------------+      +-------------------+
-|  MySQL Database  | <--> | Liquibase Scripts |
-+------------------+      +-------------------+
-        |
- Docker Compose (Container Management)
-```
+---
+
+### Key Concepts of the Diagram:
+
+1. **User - Role (Many to Many)**:
+    - A user can have multiple roles (e.g., ADMIN, USER).
+    - A role can belong to multiple users.
+
+2. **ShoppingCart - CartItem (One to Many)**:
+    - Each user has one shopping cart (ShoppingCart) containing several cart items (CartItem).
+
+3. **CartItem - Book (Many to One)**:
+    - Each cart item refers to a specific book.
+
+4. **Book - Category (Many to Many)**:
+    - A book can belong to multiple categories, and a category can have multiple books.
+
+5. **Order - OrderItems (One to Many)**:
+    - An order (Order) can have multiple items (OrderItem), where an item refers to a specific book.
+
+6. **Order - User (Many to One)**:
+    - Each order is created by a single user.
 
 ---
 

@@ -37,7 +37,7 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toDto(order);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public Page<OrderDto> findAllOrdersByUserEmail(String email, Pageable pageable) {
         return orderRepository.findByUserEmail(email, pageable)

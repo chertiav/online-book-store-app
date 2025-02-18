@@ -24,7 +24,7 @@ public class BookServiceImpl implements BookService {
     private final BookMapper bookMapper;
     private final BookSpecificationBuilder bookSpecificationBuilder;
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public Page<BookDto> findAll(Pageable pageable) {
         return bookRepository.findAll(pageable)
@@ -37,7 +37,7 @@ public class BookServiceImpl implements BookService {
                 .map(bookMapper::toDtoWithoutCategories);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public BookDto findById(Long id) {
         return bookRepository.findById(id)
@@ -45,7 +45,7 @@ public class BookServiceImpl implements BookService {
                 .orElseThrow(() -> new EntityNotFoundException("Can't find book by id: " + id));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public Page<BookDto> search(BookSearchParameters searchParameters, Pageable pageable) {
         Specification<Book> bookSpecification = bookSpecificationBuilder.build(searchParameters);
