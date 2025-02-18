@@ -37,12 +37,14 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toDto(order);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Page<OrderDto> findAllOrdersByUserEmail(String email, Pageable pageable) {
         return orderRepository.findByUserEmail(email, pageable)
                 .map(orderMapper::toDto);
     }
 
+    @Transactional
     @Override
     public OrderDto updateStatusById(Long id, OrderStatusRequestDto requestDto) {
         Order order = orderRepository.findById(id)
