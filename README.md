@@ -221,7 +221,7 @@ Make sure to save the `.env` file and avoid committing it to version control to 
 ---
 
 ## ☁️ AWS Deployment (public demo)
-- Live Swagger UI: [http://63.179.79.164/api/swagger-ui/index.html](http://63.179.79.164/api/swagger-ui/index.html)
+- Live Swagger UI: [https://bookstore-demo.chertiav.dev/api/swagger-ui/index.html](https://bookstore-demo.chertiav.dev/api/swagger-ui/index.html)
 
 > ⚠️ **Note:** The AWS endpoint is available for demonstration purposes only. Please do not use it to submit sensitive or production-level data.
 
